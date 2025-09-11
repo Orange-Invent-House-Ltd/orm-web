@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from "react";
+import { useState } from "react";
 import { ChevronRight, Building, CreditCard, User, } from "lucide-react";
 import { useTheme } from "../../custom-hooks/useTheme";
 import TransactionModal from "../AllTransactions";
