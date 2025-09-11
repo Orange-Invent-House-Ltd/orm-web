@@ -23,7 +23,7 @@ const queryClient = new QueryClient({
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     {/* Option 1: Using basename - this sets the base URL for all routes */}
-    <BrowserRouter basename="/orm">
+    <BrowserRouter >
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
           <App />
