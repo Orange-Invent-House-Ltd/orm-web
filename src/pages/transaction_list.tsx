@@ -212,7 +212,7 @@ const TransactionList = () => {
             ))}
           </div>
         )}
-        <Footer isDarkMode={isDarkMode} />
+        <Footer />
         <NavigationBar />
       </main>
 
