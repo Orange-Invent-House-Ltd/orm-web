@@ -384,7 +384,7 @@ const HomeScreen = () => {
         isVisible={isSearchVisible}
         onClose={() => setIsSearchVisible(false)}
       />
-      <Footer isDarkMode={isDarkMode} />
+      <Footer />
       <NavigationBar />
     </div>
   );

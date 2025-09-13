@@ -557,7 +557,7 @@ const BankScreen = () => {
         )}
       </main>
 
-      <Footer isDarkMode={isDarkMode} />
+      <Footer />
       <NavigationBar />
     </div>
   );
