@@ -142,7 +142,7 @@ export const NavigationBar = ({
           : 'border-gray-200'
         }
       `}>
-        <div className={`
+          {/* <div className={`
           w-6 h-6 rounded-full flex items-center justify-center
           ${isDarkMode
             ? 'bg-emerald-600'
@@ -155,7 +155,7 @@ export const NavigationBar = ({
           isDarkMode ? 'text-gray-300' : 'text-gray-700'
         }`}>
           {userName}
-        </span>
+        </span> */}
       </div>
 
       {/* Bottom Safe Area for Mobile Devices */}

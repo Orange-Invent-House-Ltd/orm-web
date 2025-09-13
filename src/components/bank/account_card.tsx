@@ -94,7 +94,7 @@ export const CompactAccountCard = ({
     }
 
     return (
-      <Building className={`w-6 h-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`} />
+      <Building className={`w-4 h-4 sm:w-6 sm:h-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`} />
     );
   };
 
@@ -103,10 +103,12 @@ export const CompactAccountCard = ({
       <div
         onClick={onTap}
         className={`
-          w-full min-h-[350px] max-w-sm mx-auto
-          rounded-2xl p-6 shadow-sm border 
+          w-full min-h-[280px] sm:min-h-[320px] lg:min-h-[350px] 
+          max-w-full sm:max-w-sm mx-auto
+          rounded-xl sm:rounded-2xl p-4 sm:p-5 lg:p-6 
+          shadow-sm border 
           transition-all duration-300 cursor-pointer 
-          transform hover:scale-[1.02] hover:shadow-lg
+          transform hover:scale-[1.01] sm:hover:scale-[1.02] hover:shadow-lg
           flex flex-col
           ${isSelected
             ? (isDarkMode
@@ -119,62 +121,64 @@ export const CompactAccountCard = ({
         `}
       >
         {/* Account Header with Avatar */}
-        <div className="flex items-start justify-between mb-6">
-          <div className="flex items-center space-x-4 min-w-0 flex-1">
-            <div className="w-14 h-14 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
-              <span className="text-white font-bold text-xl">{accountHolderName?.charAt(0) || 'A'}</span>
+        <div className="flex items-start justify-between mb-4 sm:mb-6">
+          <div className="flex items-center space-x-3 sm:space-x-4 min-w-0 flex-1">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
+              <span className="text-white font-bold text-sm sm:text-lg lg:text-xl">
+                {accountHolderName?.charAt(0) || 'A'}
+              </span>
             </div>
             <div className="min-w-0 flex-1">
-              <h3 className={`font-bold text-lg leading-tight mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+              <h3 className={`font-bold text-sm sm:text-base lg:text-lg leading-tight mb-1 sm:mb-2 truncate ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                 {accountHolderName || 'Account Holder'}
               </h3>
               <div className="flex items-center space-x-2">
-                <div className={`w-10 h-10 rounded flex items-center justify-center ${(!bankLogo || imageError)
-                    ? (isDarkMode ? 'bg-gray-600' : 'bg-gray-200')
-                    : ''
+                <div className={`w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 rounded flex items-center justify-center flex-shrink-0 ${(!bankLogo || imageError)
+                  ? (isDarkMode ? 'bg-gray-600' : 'bg-gray-200')
+                  : ''
                   }`}>
                   <BankIcon />
                 </div>
-                <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                <p className={`text-xs sm:text-sm font-medium truncate ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                   {bankName}
                 </p>
               </div>
             </div>
           </div>
           {isSelected && (
-            <div className="w-4 h-4 bg-emerald-500 rounded-full flex-shrink-0 shadow-sm"></div>
+            <div className="w-3 h-3 sm:w-4 sm:h-4 bg-emerald-500 rounded-full flex-shrink-0 shadow-sm"></div>
           )}
         </div>
 
         {/* Full Account Details */}
-        <div className={`rounded-xl p-5 mb-6 space-y-4 ${isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50/80'}`}>
+        <div className={`rounded-lg sm:rounded-xl p-3 sm:p-4 lg:p-5 mb-4 sm:mb-6 space-y-3 sm:space-y-4 ${isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50/80'}`}>
           {/* Account Number */}
-          <div className="flex items-center space-x-3">
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDarkMode ? 'bg-gray-600' : 'bg-white'
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-md sm:rounded-lg flex items-center justify-center flex-shrink-0 ${isDarkMode ? 'bg-gray-600' : 'bg-white'
               }`}>
-              <CreditCard className={`w-4 h-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`} />
+              <CreditCard className={`w-3 h-3 sm:w-4 sm:h-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`} />
             </div>
             <div className="flex-1 min-w-0">
               <p className={`text-xs font-medium mb-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                 Account Number
               </p>
-              <p className={`font-bold text-base ${isDarkMode ? 'text-white' : 'text-gray-900'} font-mono tracking-wider`}>
+              <p className={`font-bold text-sm sm:text-base ${isDarkMode ? 'text-white' : 'text-gray-900'} font-mono tracking-wider truncate`}>
                 {accountNumber || 'N/A'}
               </p>
             </div>
           </div>
 
           {/* Account Type */}
-          <div className="flex items-center space-x-3">
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDarkMode ? 'bg-gray-600' : 'bg-white'
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-md sm:rounded-lg flex items-center justify-center flex-shrink-0 ${isDarkMode ? 'bg-gray-600' : 'bg-white'
               }`}>
-              <User className={`w-4 h-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`} />
+              <User className={`w-3 h-3 sm:w-4 sm:h-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`} />
             </div>
             <div className="flex-1 min-w-0">
               <p className={`text-xs font-medium mb-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                 Account Type
               </p>
-              <p className={`font-bold text-base ${getAccountTypeColor(accountType)}`}>
+              <p className={`font-bold text-sm sm:text-base ${getAccountTypeColor(accountType)} truncate`}>
                 {accountType || 'Standard'}
               </p>
             </div>
@@ -182,50 +186,50 @@ export const CompactAccountCard = ({
         </div>
 
         {/* Balance Section - Enhanced */}
-        <div className="text-center flex-1 flex flex-col justify-center py-4">
-          <p className={`text-sm font-semibold mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+        <div className="text-center flex-1 flex flex-col justify-center py-2 sm:py-4">
+          <p className={`text-xs sm:text-sm font-semibold mb-2 sm:mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
             Available Balance
           </p>
-          <div className={`px-4 py-4 rounded-2xl shadow-sm ${isDarkMode ? 'bg-gradient-to-r from-gray-700 to-gray-600' : 'bg-gradient-to-r from-gray-50 to-gray-100'
+          <div className={`px-3 sm:px-4 py-3 sm:py-4 rounded-xl sm:rounded-2xl shadow-sm ${isDarkMode ? 'bg-gradient-to-r from-gray-700 to-gray-600' : 'bg-gradient-to-r from-gray-50 to-gray-100'
             }`}>
-            <p className={`text-3xl font-black leading-tight ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+            <p className={`text-xl sm:text-2xl lg:text-3xl font-black leading-tight break-all ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
               {getCurrencySymbol(currency)}{formatBalance(balance)}
             </p>
-            <p className={`text-sm font-medium mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+            <p className={`text-xs sm:text-sm font-medium mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
               {currency?.toUpperCase() || 'NGN'}
             </p>
           </div>
         </div>
 
         {/* View Transaction History Button */}
-        <div className="mt-6 pt-4 border-t border-opacity-20 border-gray-400">
+        <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-opacity-20 border-gray-400">
           <button
             onClick={(e) => {
               e.stopPropagation(); // Prevent card selection
               setIsModalOpen(true);
             }}
-            className={`w-full flex items-center justify-center space-x-3 px-4 py-3 rounded-xl transition-all cursor-pointer ${isDarkMode
+            className={`w-full flex items-center justify-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl transition-all cursor-pointer ${isDarkMode
               ? 'bg-emerald-900/30 hover:bg-emerald-800/40 border border-emerald-700/50'
               : 'bg-emerald-50/50 hover:bg-emerald-100/70 border border-emerald-200/50'
               }`}
           >
-            <span className={`text-sm font-semibold ${isDarkMode ? 'text-emerald-300' : 'text-emerald-700'
+            <span className={`text-xs sm:text-sm font-semibold ${isDarkMode ? 'text-emerald-300' : 'text-emerald-700'
               }`}>
               View Transaction History
             </span>
-            <ChevronRight className={`w-5 h-5 ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'
+            <ChevronRight className={`w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'
               }`} />
           </button>
         </div>
 
         {/* Account Status Indicator */}
-        <div className="mt-3 text-center">
-          <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium ${isDarkMode
+        <div className="mt-2 sm:mt-3 text-center">
+          <div className={`inline-flex items-center space-x-1.5 sm:space-x-2 px-2.5 sm:px-3 py-1 rounded-full text-xs font-medium ${isDarkMode
             ? 'bg-green-900/30 text-green-300 border border-green-700/30'
-              : 'bg-green-50 text-green-700 border border-green-200'
+            : 'bg-green-50 text-green-700 border border-green-200'
             }`}>
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span>Active Account</span>
+            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full flex-shrink-0"></div>
+            <span className="whitespace-nowrap">Active Account</span>
           </div>
         </div>
       </div>

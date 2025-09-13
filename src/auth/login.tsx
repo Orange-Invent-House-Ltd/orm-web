@@ -54,19 +54,19 @@ const ProfessionalLogin = () => {
   }, [methods]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-400 via-green-500 to-teal-600 flex items-center justify-center sm:p-4 p-2 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center sm:p-4 p-2 relative overflow-hidden">
         {isPending && <LoadingOverlay />}
       {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden">
+      {/* <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/5 rounded-full blur-3xl"></div>
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white/5 rounded-full blur-3xl"></div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-white/3 rounded-full blur-3xl"></div>
-      </div>
+      </div> */}
 
       <div className="w-full max-w-md relative z-10">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-36 h-36 bg-white/20 backdrop-blur-sm rounded-2xl mb-6 shadow-lg">
+          <div className="inline-flex items-center justify-center w-36 h-36 bg-white/20 backdrop-blur-sm rounded-2xl mb-6 shadow-lg bg-gradient-to-br from-emerald-400 via-green-500 to-teal-600 ">
             <img src={logo} className="w-28 h-28 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
@@ -74,7 +74,7 @@ const ProfessionalLogin = () => {
         </div>
 
         {/* Login Form */}
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-8">
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-8 bg-gradient-to-br from-emerald-400 via-green-500 to-teal-600 ">
           <FormProvider {...methods}>
             <div className="space-y-6">
               {/* Email Input */}
