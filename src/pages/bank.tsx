@@ -134,6 +134,9 @@ const BankScreen = () => {
       from_datetime: fromDate,
       to_datetime: toDate,
       response_type: 'CSV',
+      customer_id: 1309,
+      username: 'KADUNASTATEGOVTSA',
+      password: 'password1'
     }, {
       onSuccess: (data: any) => {
         console.log('Statement data fetched successfully:', data);

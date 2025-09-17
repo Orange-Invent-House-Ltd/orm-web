@@ -1,4 +1,4 @@
-import { Home, LogOut, User } from "lucide-react";
+import { Home, LogOut } from "lucide-react";
 import { useTheme } from "../../custom-hooks/useTheme"; // Adjust path as needed
 import { useState } from "react";
 import { toast } from "react-toastify";
@@ -15,7 +15,7 @@ interface NavigationBarProps {
 export const NavigationBar = ({ 
   onHomeClick, 
   onLogoutClick, 
-  userName = "User",
+  // userName = "User",
   className = "" 
 }: NavigationBarProps) => {
   const { isDarkMode } = useTheme();
@@ -86,7 +86,7 @@ export const NavigationBar = ({
         </button>
 
         {/* User Info - Hidden on small screens, shown on larger screens */}
-        <div className={`
+          {/* <div className={`
           hidden sm:flex items-center space-x-3
           px-4 py-2 rounded-xl
           ${isDarkMode
@@ -111,7 +111,7 @@ export const NavigationBar = ({
               Welcome back
             </p>
           </div>
-        </div>
+        </div> */}
 
         {/* Logout Button */}
         <button

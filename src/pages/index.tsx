@@ -72,9 +72,9 @@ const HomeScreen = () => {
   useEffect(() => {
     mutate({
       account_number: '1225711874',
-      customer_id: 1327,
-      username: 'KADGOV',
-      password: 'test1234'
+      customer_id: 1309,
+      username: 'KADUNASTATEGOVTSA',
+      password: 'password1'
     }, {
       onSuccess: (data: any) => {
         console.log('Bank data fetched successfully:', data);
@@ -205,7 +205,7 @@ const HomeScreen = () => {
                 <HeaderCard
                   key="available-balance"
                   title="Available Balance:"
-                  currency="NGN"
+                  currency="USD"
                   amount={availableBalance}
                   isVisible={isBalanceVisible}
                   onToggleVisibility={toggleBalanceVisibility}
@@ -257,7 +257,7 @@ const HomeScreen = () => {
                     ? 'bg-gray-800 border-gray-700 hover:bg-gray-750 hover:border-gray-600'
                     : 'bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300'
                     }`}
-                  onClick={() => navigate(`/${account.bankName}`)}
+                    onClick={() => navigate(`/${account.bankName}`, { state: { accountNumber: account.accountNumber } })}
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 sm:mb-4 gap-3 sm:gap-4">
                     <div className="flex items-center space-x-3 min-w-0 flex-1">
