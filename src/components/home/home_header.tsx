@@ -131,7 +131,7 @@ export const HeaderCard = ({
                 <span className="text-white/90 text-lg sm:text-xl font-medium flex-shrink-0">
                   {getCurrencyIcon(currency || 'NGN')}
                 </span>
-                <span className="text-white font-bold text-xl sm:text-2xl md:text-3xl tracking-tight break-all">
+                <span className="text-white font-bold text-lg sm:text-xl  tracking-tight break-all">
                   {formatAmount(amount || 0.00)}
                 </span>
               </div>

@@ -649,7 +649,7 @@ const HomeScreen = () => {
                             <p className={`text-xl sm:text-2xl font-bold truncate transition-all duration-300 ${isDarkMode ? 'text-white group-hover:text-blue-100' : 'text-gray-900 group-hover:text-blue-800'
                               }`}>
                               {isBalanceVisible
-                                ? `₦${account.currentBalance.toLocaleString()}`
+                                ? `₦ ${formatAmount(account.currentBalance)}`
                                 : '₦••••••••'}
                             </p>
                           </div>
@@ -749,6 +749,12 @@ const HomeScreen = () => {
       <NavigationBar />
     </div>
   );
+};
+const formatAmount = (amount: number) => {
+  return new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
 };
 
 export default HomeScreen;
