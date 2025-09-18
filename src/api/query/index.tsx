@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getBankImages } from "..";
+import { fetchAggregatedBalance, getBankImages } from "..";
 
 // export const useFetchBanks = () => {
 //   return useQuery({
@@ -16,3 +16,11 @@ export const useFetchBankImages = () => {
     enabled: true
   });
 };
+
+// use agreegated balance
+export const useFetchAggregatedBalance = () => {
+  return useQuery({
+    queryFn: () => fetchAggregatedBalance(),
+    queryKey: ["aggregatedBalance"],
+  });
+}
