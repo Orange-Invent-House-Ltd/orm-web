@@ -406,6 +406,7 @@ import { NavigationBar } from '../components/reuseable/buttom_nav';
 // import { useFetchBanks } from '../api/mutation';
 import { useNavigate } from 'react-router-dom';
 import { useFetchAggregatedBalance } from '../api/query';
+import logo from "../assets/logo.png";
 
 // Types
 interface BankEntry {
@@ -471,7 +472,7 @@ const HomeScreen = () => {
                 )}
               </button>
               <h1 className={`text-sm sm:text-base lg:text-lg xl:text-xl font-semibold truncate ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                Orange Revenue Monitoring
+                Kaduna Financial Dashboard
               </h1>
             </div>
 
@@ -495,7 +496,7 @@ const HomeScreen = () => {
       <main className="w-full mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 lg:py-6 xl:py-8 pb-24 sm:pb-6">
         {/* Balance Overview Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 lg:mb-8 gap-3 sm:gap-4">
-          <div className="min-w-0 flex-1">
+          <div className="">
             <h2 className={`text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold mb-1 sm:mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
               Balance Overview
             </h2>
@@ -503,9 +504,7 @@ const HomeScreen = () => {
               Monitor your financial metrics
             </p>
           </div>
-          <div className="bg-gradient-to-r from-red-500 to-pink-500 px-3 sm:px-4 lg:px-6 py-2 sm:py-2.5 lg:py-3 rounded-full shadow-lg flex-shrink-0 self-start sm:self-center">
-            <span className="text-white font-bold text-xs sm:text-sm lg:text-base xl:text-lg tracking-wider">ORM</span>
-          </div>
+          <img src={logo} alt="logo" width={80} />
         </div>
 
 
@@ -649,8 +648,8 @@ const HomeScreen = () => {
                             <p className={`text-xl sm:text-2xl font-bold truncate transition-all duration-300 ${isDarkMode ? 'text-white group-hover:text-blue-100' : 'text-gray-900 group-hover:text-blue-800'
                               }`}>
                               {isBalanceVisible
-                                ? `₦ ${formatAmount(account.currentBalance)}`
-                                : '₦••••••••'}
+                                ? `${account.accountName == 'Domiciliary (USD) Account' ? '$' : '₦'} ${formatAmount(account.currentBalance)}`
+                                : `${account.accountName == 'Domiciliary (USD) Account' ? '$' : '₦'} ••••••••`}
                             </p>
                           </div>
 
