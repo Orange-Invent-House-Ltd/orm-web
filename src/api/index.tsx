@@ -18,11 +18,23 @@ export const fetchAggregatedBalance = async () => {
   return res.data;
 }
 
-export const fetchStatements = async (search:any, start:any, end:any, account_number:any,) => {
-  const res = await privateApi.get("/integrations/zenith-accounts-statement",
-    { params: { search, start, end, account_number }
-    }
-  );
+// export const fetchStatements = async (search: any, start: any, end: any, account_number: any,) => {
+//   const res = await privateApi.get("/integrations/zenith-accounts-statement",
+//     {
+//       params: { search, start, end, account_number }
+//     }
+//   );
+//   return res.data;
+// };
+export const fetchStatements = async (params: {
+  search?: string;
+  start?: string;
+  end?: string;
+  account_number?: string;
+} = {}) => {
+  const res = await privateApi.get("/integrations/zenith-accounts-statement", {
+    params: params
+  });
   return res.data;
 };
 

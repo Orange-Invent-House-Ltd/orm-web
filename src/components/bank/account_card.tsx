@@ -62,12 +62,13 @@ export const CompactAccountCard = ({
   } = useTransactionStore();
 
 
-  // Only fetch when we have a current account number set and it matches this card, and accountNumber is defined
+  // In CompactAccountCard component
   const shouldFetch = !!accountNumber && currentAccountNumber === accountNumber;
 
-  // Only call useFetchStatements if shouldFetch is true
-  const account_number = shouldFetch && accountNumber ? { account_number: accountNumber } : undefined;
-  const { data, isLoading, error } = useFetchStatements(account_number || {});
+  const { data, isLoading, error } = useFetchStatements(
+    shouldFetch ? { account_number: accountNumber } : undefined
+  );
+
 
   // Track if this specific card is loading
   useEffect(() => {

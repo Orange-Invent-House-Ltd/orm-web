@@ -20,7 +20,8 @@ export const SearchModal = ({
     const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [localError, setLocalError] = useState<string | null>(null);
-    const [searchParams, setSearchParams] = useState<any>(null);
+    const [shouldSearch, setShouldSearch] = useState(false); // New state to control when to search
+    const [searchQueryParams, setSearchQueryParams] = useState<any>(null); // Store the actual search params
 
     const {
         loadTransactionsSuccess,
@@ -29,8 +30,10 @@ export const SearchModal = ({
         clearData
     } = useTransactionStore();
 
-    // Only fetch when we have search parameters
-    const { data, isLoading, error } = useFetchStatements(searchParams || { disabled: true });
+    // Only fetch when shouldSearch is true and we have query parameters
+    const { data, isLoading, error } = useFetchStatements(
+        shouldSearch && searchQueryParams ? searchQueryParams : undefined
+    );
 
     // Close modal when Escape key is pressed
     useEffect(() => {
@@ -54,16 +57,16 @@ export const SearchModal = ({
         setSelectedFilter(null);
         setSearchTerm('');
         setLocalError(null);
-        setSearchParams(null);
+        setShouldSearch(false);
+        setSearchQueryParams(null);
         onClose();
     }, [onClose]);
 
     // Handle search results
     useEffect(() => {
-        if (searchParams && data) {
-
+        if (shouldSearch && data) {
             // Update store with search results
-            loadTransactionsSuccess(data?.data, { searchTerm });
+            loadTransactionsSuccess(data?.data || data, { searchTerm });
 
             // Navigate to transaction list
             navigate('/transactions');
@@ -71,17 +74,18 @@ export const SearchModal = ({
             // Close modal after successful search
             handleClose();
         }
-    }, [data, searchParams, loadTransactionsSuccess, searchTerm, navigate, handleClose]);
+    }, [data, shouldSearch, loadTransactionsSuccess, searchTerm, navigate, handleClose]);
 
     // Handle errors
     useEffect(() => {
-        if (error && searchParams) {
+        if (shouldSearch && error) {
             const errorMessage = error.message || 'Search failed. Please try again.';
             setLocalError(errorMessage);
             loadTransactionsError(errorMessage);
-            // Don't reset searchParams so user can retry
+            // Reset search state to allow retry
+            setShouldSearch(false);
         }
-    }, [error, searchParams, loadTransactionsError]);
+    }, [error, shouldSearch, loadTransactionsError]);
 
     // Clear error when search term changes
     useEffect(() => {
@@ -169,8 +173,9 @@ export const SearchModal = ({
         clearData();
         startLoading({ searchTerm: trimmedSearchTerm });
 
-        // Set search parameters to trigger the API call
-        setSearchParams(params);
+        // Set the query parameters and trigger the API call
+        setSearchQueryParams(params);
+        setShouldSearch(true); // This will trigger the useFetchStatements hook
         setLocalError(null);
     }, [searchTerm, selectedFilter, buildSearchParams, clearData, startLoading]);
 
@@ -184,14 +189,16 @@ export const SearchModal = ({
         setSelectedFilter(key);
         setSearchTerm('');
         setLocalError(null);
-        setSearchParams(null);
+        setShouldSearch(false);
+        setSearchQueryParams(null);
     };
 
     const handleClearSearch = () => {
         setSelectedFilter(null);
         setSearchTerm('');
         setLocalError(null);
-        setSearchParams(null);
+        setShouldSearch(false);
+        setSearchQueryParams(null);
     };
 
     const handleSearchTermChange = (e: React.ChangeEvent<HTMLInputElement>) => {

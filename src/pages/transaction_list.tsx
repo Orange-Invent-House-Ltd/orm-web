@@ -17,6 +17,8 @@ const TransactionList = () => {
   const [showFilters, setShowFilters] = useState(true);
   const [transactionType, setTransactionType] = useState('all');
   const [filteredTransactions, setFilteredTransactions] = useState<any[]>([]);
+  const [totalCredit, setTotalCredit] = useState(0);
+  const [totalDebit, setTotalDebit] = useState(0);
 
   // Use the Zustand store
   const {
@@ -30,15 +32,16 @@ const TransactionList = () => {
     setError,
   } = useTransactionStore();
 
-  // Filter transactions based on search query and transaction type
+  // Calculate totals and filter transactions
   useEffect(() => {
     if (!transactions || transactions?.length === 0) {
       setFilteredTransactions([]);
+      setTotalCredit(0);
+      setTotalDebit(0);
       return;
     }
-    console.log('all data is this transactions data', transactions);
 
-    let filtered = [...transactions]; // Create a copy to avoid mutations
+    let filtered = [...transactions];
 
     // Apply search filter
     if (searchQuery.trim()) {
@@ -60,8 +63,39 @@ const TransactionList = () => {
       });
     }
 
+    // Calculate totals for filtered transactions
+    const creditTotal = filtered.reduce((sum, transaction) => {
+      return sum + (parseFloat(transaction.CreditAmt) || 0);
+    }, 0);
+
+    const debitTotal = filtered.reduce((sum, transaction) => {
+      return sum + (parseFloat(transaction.DebitAmt) || 0);
+    }, 0);
+
     setFilteredTransactions(filtered);
+    setTotalCredit(creditTotal);
+    setTotalDebit(debitTotal);
   }, [transactions, searchQuery, transactionType]);
+
+  // Format currency function
+  // const formatCurrency = (amount: number, currency: string = 'NGN') => {
+  //   return new Intl.NumberFormat('en-US', {
+  //     style: 'currency',
+  //     currency: currency,
+  //     minimumFractionDigits: 2,
+  //     maximumFractionDigits: 2,
+  //   }).format(amount);
+  // };
+
+  const getCurrencySymbol = (currency: string = 'NGN') => {
+    switch (currency?.toUpperCase()) {
+      case 'NGN': return '₦';
+      case 'USD': return '$';
+      case 'EUR': return '€';
+      case 'GBP': return '£';
+      default: return '₦';
+    }
+  };
 
   const showTransactionDetails = (transaction: any) => {
     setSelectedTransaction(transaction);
@@ -88,7 +122,6 @@ const TransactionList = () => {
   };
 
   const handleGoBack = () => {
-    // Clear error state when going back
     setError(null);
     window.history.back();
   };
@@ -227,20 +260,16 @@ const TransactionList = () => {
         )}
 
         {/* Transaction Count and Summary */}
-        {!error && (
+        {!error && hasTransactions && (
           <div className="mb-4 sm:mb-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
               <p className={`text-xs sm:text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                {hasTransactions && (
-                  <>
-                    Showing {filteredTransactions.length} of {transactions.length} transaction{transactions.length !== 1 ? 's' : ''}
-                    {isFiltered && <span className="ml-1">(filtered)</span>}
-                  </>
-                )}
+                Showing {filteredTransactions.length} of {transactions.length} transaction{transactions.length !== 1 ? 's' : ''}
+                {isFiltered && <span className="ml-1">(filtered)</span>}
               </p>
 
               {/* Clear filters button if any filters are active */}
-              {isFiltered && hasTransactions && (
+              {isFiltered && (
                 <button
                   onClick={clearFilters}
                   className={`text-xs px-3 py-1 rounded-full transition-colors ${isDarkMode
@@ -252,6 +281,67 @@ const TransactionList = () => {
                 </button>
               )}
             </div>
+
+            {/* Total Credit and Debit Cards */}
+            {hasFilteredTransactions && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                {/* Total Credit Card */}
+                <div className={`p-4 rounded-xl border ${isDarkMode
+                  ? 'bg-green-900/20 border-green-800'
+                  : 'bg-green-50 border-green-200'
+                  }`}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className={`text-sm font-medium ${isDarkMode ? 'text-green-300' : 'text-green-700'}`}>
+                        Total Credit
+                      </p>
+                      <p className={`text-2xl font-bold ${isDarkMode ? 'text-green-400' : 'text-green-900'}`}>
+                        {getCurrencySymbol()}{totalCredit.toLocaleString('en-US', {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
+                      </p>
+                    </div>
+                    <div className={`p-3 rounded-lg ${isDarkMode ? 'bg-green-800/30' : 'bg-green-100'}`}>
+                      <span className={`text-lg font-semibold ${isDarkMode ? 'text-green-400' : 'text-green-700'}`}>
+                        ↑
+                      </span>
+                    </div>
+                  </div>
+                  <p className={`text-xs mt-2 ${isDarkMode ? 'text-green-400/70' : 'text-green-700/70'}`}>
+                    {filteredTransactions.filter(t => t.Mode?.toLowerCase() === 'credit').length} credit transaction(s)
+                  </p>
+                </div>
+
+                {/* Total Debit Card */}
+                <div className={`p-4 rounded-xl border ${isDarkMode
+                  ? 'bg-red-900/20 border-red-800'
+                  : 'bg-red-50 border-red-200'
+                  }`}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className={`text-sm font-medium ${isDarkMode ? 'text-red-300' : 'text-red-700'}`}>
+                        Total Debit
+                      </p>
+                      <p className={`text-2xl font-bold ${isDarkMode ? 'text-red-400' : 'text-red-900'}`}>
+                        {getCurrencySymbol()}{totalDebit.toLocaleString('en-US', {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
+                      </p>
+                    </div>
+                    <div className={`p-3 rounded-lg ${isDarkMode ? 'bg-red-800/30' : 'bg-red-100'}`}>
+                      <span className={`text-lg font-semibold ${isDarkMode ? 'text-red-400' : 'text-red-700'}`}>
+                        ↓
+                      </span>
+                    </div>
+                  </div>
+                  <p className={`text-xs mt-2 ${isDarkMode ? 'text-red-400/70' : 'text-red-700/70'}`}>
+                    {filteredTransactions.filter(t => t.Mode?.toLowerCase() === 'debit').length} debit transaction(s)
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

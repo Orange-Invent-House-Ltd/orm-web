@@ -24,11 +24,21 @@ export const useFetchAggregatedBalance = () => {
     queryKey: ["aggregatedBalance"],
   });
 }
-// use fetch statements
-export const useFetchStatements = (search?: any, start?: any, end?: any, account_number?: any) => {
+// // use fetch statements
+// export const useFetchStatements = (search?: any, start?: any, end?: any, account_number?: any) => {
+//   return useQuery({
+//     queryFn: () => fetchStatements(search, start, end, account_number,),
+//     queryKey: ["statements", search, start, end, account_number],
+//   });
+// }
+export const useFetchStatements = (params?: {
+  search?: string;
+  start?: string;
+  end?: string;
+  account_number?: string;
+}) => {
   return useQuery({
-    queryFn: () => fetchStatements(search, start, end, account_number,),
-    queryKey: ["statements", search, start, end, account_number],
-    // enabled: !!account_number || !!search
+    queryFn: () => fetchStatements(params),
+    queryKey: ["statements", params],
   });
 }

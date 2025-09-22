@@ -10,10 +10,13 @@ import LoadingOverlay from '../components/reuseable/loading-overlay';
 import Footer from '../components/reuseable/footer';
 import { NavigationBar } from '../components/reuseable/buttom_nav';
 // import { useNavigate } from 'react-router-dom';
-import { useFetchAggregatedBalance, useFetchStatements } from '../api/query';
+import {
+  useFetchAggregatedBalance,
+  //  useFetchStatements
+} from '../api/query';
 import { BankListItem } from '../components/home/bank_list';
-import { useTransactionStore } from '../store/transactions';
-import { useNavigate } from 'react-router-dom';
+// import { useTransactionStore } from '../store/transactions';
+// import { useNavigate } from 'react-router-dom';
 
 // Updated interfaces to match API structure and store requirements
 interface ApiAccount {
@@ -51,7 +54,7 @@ const HomeScreen = () => {
   const [activeTab, setActiveTab] = useState<'bar' | 'line'>('bar');
   const { data, isLoading, error } = useFetchAggregatedBalance();
 
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   // Parse balances by currency and accounts from API response
   const balancesByCurrency = data?.balancesByCurrency || {};
   const aggregatedAccounts = data?.aggregatedAccounts || [];
@@ -143,8 +146,8 @@ const HomeScreen = () => {
   };
 
   const bankEntries = createBankEntries();
-  const { setTransactions } = useTransactionStore();
-  const { data: trasdata } = useFetchStatements();
+  // const { setTransactions } = useTransactionStore();
+  // const { data: trasdata } = useFetchStatements();
 
   // Toggle balance visibility
   const toggleBalanceVisibility = () => {
@@ -289,7 +292,7 @@ const HomeScreen = () => {
                   {Object.keys(balancesByCurrency).length} currencies • {aggregatedAccounts.length} accounts
                 </span>
               </div>
-              <div className={`px-3 py-1 mt-4 rounded-lg self-start sm:self-center ${isDarkMode ? 'bg-emerald-900/30' : 'bg-emerald-100'
+              {/* <div className={`px-3 py-1 mt-4 rounded-lg self-start sm:self-center ${isDarkMode ? 'bg-emerald-900/30' : 'bg-emerald-100'
                 }`}>
                 <button
                   onClick={() => {
@@ -303,7 +306,7 @@ const HomeScreen = () => {
 
                   View all Transactions
                 </button>
-              </div>
+              </div> */}
             </div>
           </div>
 
