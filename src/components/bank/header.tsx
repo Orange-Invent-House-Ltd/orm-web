@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Eye, EyeOff, TrendingDown, TrendingUp, Building2 } from "lucide-react";
+import { Eye, EyeOff, TrendingDown, TrendingUp} from "lucide-react";
 import { useTheme } from "../../custom-hooks/useTheme";
 
-export const BankHeader = ({ rev, currency, revamount, outflowamount, isVisible, onVisibilityToggle, outflow, currentBalance }: {
+export const BankHeader = ({ rev, currency, revamount, outflowamount, isVisible, onVisibilityToggle, outflow }: {
   rev?: string;
   currency?: string;
   revamount?: any;
@@ -10,7 +10,7 @@ export const BankHeader = ({ rev, currency, revamount, outflowamount, isVisible,
   isVisible?: boolean;
   onVisibilityToggle?: () => void;
   outflow?: string;
-  currentBalance?: any;
+  // currentBalance?: any;
 }) => {
   const { isDarkMode } = useTheme();
 
@@ -63,7 +63,7 @@ export const BankHeader = ({ rev, currency, revamount, outflowamount, isVisible,
       </div>
 
       {/* Three-column layout for financial metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Total Inflow */}
         <div className={`p-5 rounded-xl border transition-all duration-300 ${isDarkMode
           ? 'bg-gray-700/30 border-gray-600/50'
@@ -117,7 +117,7 @@ export const BankHeader = ({ rev, currency, revamount, outflowamount, isVisible,
         </div>
 
         {/* Current Balance */}
-        <div className={`p-5 rounded-xl border transition-all duration-300 ${isDarkMode
+        {/* <div className={`p-5 rounded-xl border transition-all duration-300 ${isDarkMode
           ? 'bg-gray-700/30 border-gray-600/50'
           : 'bg-blue-50 border-blue-200/50'
           }`}>
@@ -142,7 +142,7 @@ export const BankHeader = ({ rev, currency, revamount, outflowamount, isVisible,
               {getCurrencySymbol(currency)}{formatAmount(currentBalance)}
             </p>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useBankStore } from "../../store/store";
 import { useNavigate } from "react-router-dom";
 
-// Define the Account interface to match your API
+// Define the Account interface to match your store's expected format
 interface Account {
   account_id: number;
   account_number: string;
@@ -13,7 +13,16 @@ interface Account {
   bank_name: string;
 }
 
-// Updated interface to support grouped accounts by bank
+// API Account interface (what comes from the API)
+// interface ApiAccount {
+//   accountName: string;
+//   accountNumber: string;
+//   currentBalance: string;
+//   availableBalance: string;
+//   currency: string;
+// }
+
+// Updated interface to support grouped accounts by bank/category
 interface BankEntry {
   bankName: string;
   currencyBalances: {
@@ -21,15 +30,16 @@ interface BankEntry {
   };
   syncAccounts: Account[];
   totalBalance: number;
-  bankLogo?: string; // Add optional logo URL
+  bankLogo?: string;
 }
+
 // Bank List Item Component for Grouped Accounts
 interface BankListItemProps {
   bankEntry: BankEntry;
   isVisible: boolean;
 }
 
-// Updated BankListItem component with logo support
+// Updated BankListItem component
 export const BankListItem = ({
   bankEntry,
   isVisible
@@ -37,6 +47,7 @@ export const BankListItem = ({
   const { isDarkMode } = useTheme();
   const [ripples, setRipples] = useState<Array<{ id: number; x: number; y: number }>>([]);
   const [imageError, setImageError] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const navigate = useNavigate();
 
@@ -67,12 +78,18 @@ export const BankListItem = ({
     navigate(`/${encodeURIComponent(bankEntry.bankName)}`);
   };
 
-  const formatAmount = (amount: number) => {
+  const toggleExpanded = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    setIsExpanded(!isExpanded);
+  };
+
+  const formatAmount = (amount: number | string) => {
     if (!isVisible) return '••••••••';
+    const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
     return new Intl.NumberFormat('en-US', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    }).format(amount);
+    }).format(numAmount);
   };
 
   const getCurrencySymbol = (currency: string) => {
@@ -85,6 +102,16 @@ export const BankListItem = ({
     }
   };
 
+  // Generate icon based on bank/category name
+  const getBankIcon = (bankName: string) => {
+    const name = bankName.toLowerCase();
+    if (name.includes('tsa') || name.includes('treasury')) return '🏛️';
+    if (name.includes('tax') || name.includes('vat')) return '📊';
+    if (name.includes('foreign') || name.includes('domiciliary')) return '💱';
+    if (name.includes('fund') || name.includes('insurance')) return '🛡️';
+    return '🏦';
+  };
+
   // Bank logo component with fallback
   const BankLogo = () => {
     if (bankEntry.bankLogo && !imageError) {
@@ -92,16 +119,16 @@ export const BankListItem = ({
         <img 
           src={bankEntry.bankLogo} 
           alt={`${bankEntry.bankName} logo`}
-          className="w-full h-full object-contain "
+          className="w-full h-full object-contain"
           onError={() => setImageError(true)}
         />
       );
     }
     
-    // Fallback to initials if no logo or image failed to load
+    // Fallback to icon or initials
     return (
-      <span className="text-white font-bold text-sm sm:text-lg">
-        {bankEntry.bankName.charAt(0)}
+      <span className="text-white text-lg">
+        {getBankIcon(bankEntry.bankName)}
       </span>
     );
   };
@@ -136,29 +163,36 @@ export const BankListItem = ({
       {/* Mobile Layout */}
       <div className="block sm:hidden">
         <div className="flex items-start space-x-4 mb-4">
-          <div className={`${!bankEntry.bankLogo || imageError ? 'w-10 h-10 sm:w-12 sm:h-12' : 'w-16 h-16'} rounded-xl flex items-center justify-center flex-shrink-0 ${
-            // Only show gradient background if no logo or logo failed to load
-            (!bankEntry.bankLogo || imageError) 
-              ? (isDarkMode 
-                  ? 'bg-gradient-to-r from-emerald-600 to-teal-700' 
-                  : 'bg-gradient-to-r from-emerald-500 to-teal-600')
-              : '' // Neutral background for logos
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
+            isDarkMode 
+              ? 'bg-gradient-to-r from-emerald-600 to-teal-700' 
+              : 'bg-gradient-to-r from-emerald-500 to-teal-600'
           }`}>
             <BankLogo />
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className={`font-semibold text-sm sm:text-base truncate ${
+            <h3 className={`font-semibold text-sm truncate ${
               isDarkMode ? 'text-white' : 'text-gray-900'
             }`}>
               {bankEntry.bankName}
             </h3>
-            <p className={`text-xs sm:text-sm ${
+            <p className={`text-xs ${
               isDarkMode ? 'text-gray-400' : 'text-gray-600'
             }`}>
               {bankEntry.syncAccounts.length} account{bankEntry.syncAccounts.length !== 1 ? 's' : ''}
               • {Object.keys(bankEntry.currencyBalances).length} currenc{Object.keys(bankEntry.currencyBalances).length !== 1 ? 'ies' : 'y'}
             </p>
           </div>
+          <button
+            onClick={toggleExpanded}
+            className={`p-2 rounded-lg transition-colors ${
+              isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
+            }`}
+          >
+            <span className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
+              ▼
+            </span>
+          </button>
         </div>
         
         {/* Currency balances for mobile */}
@@ -176,22 +210,43 @@ export const BankListItem = ({
             </div>
           ))}
         </div>
+
+        {/* Expandable account details for mobile */}
+        {isExpanded && (
+          <div className={`mt-4 p-3 rounded-lg ${isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
+            <h4 className={`text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+              Individual Accounts:
+            </h4>
+            <div className="space-y-2">
+              {bankEntry.syncAccounts.map((account, idx) => (
+                <div key={idx} className={`text-xs p-2 rounded ${isDarkMode ? 'bg-gray-600/30' : 'bg-white/50'}`}>
+                  <div className={`font-medium ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                    {account.account_holder_name}
+                  </div>
+                  <div className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    {account.account_number} • {account.currency}
+                  </div>
+                  <div className={`font-bold ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                    {getCurrencySymbol(account.currency)}{formatAmount(account.balance)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Desktop Layout */}
-      <div className="hidden sm:flex items-center justify-between">
+      <div className="hidden sm:flex items-start justify-between">
         <div className="flex items-center space-x-4 min-w-0 flex-1 mr-4">
-          <div className={`${!bankEntry.bankLogo || imageError ? 'w-10 h-10 sm:w-12 sm:h-12' : 'w-16 h-16'} rounded-xl flex items-center justify-center flex-shrink-0 ${
-            // Only show gradient background if no logo or logo failed to load
-            (!bankEntry.bankLogo || imageError) 
-              ? (isDarkMode 
-                  ? 'bg-gradient-to-r from-emerald-600 to-teal-700' 
-                  : 'bg-gradient-to-r from-emerald-500 to-teal-600')
-              : '' // Neutral background for logos
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
+            isDarkMode 
+              ? 'bg-gradient-to-r from-emerald-600 to-teal-700' 
+              : 'bg-gradient-to-r from-emerald-500 to-teal-600'
           }`}>
             <BankLogo />
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <h3 className={`font-semibold text-lg truncate ${
               isDarkMode ? 'text-white' : 'text-gray-900'
             }`}>
@@ -203,14 +258,26 @@ export const BankListItem = ({
               {bankEntry.syncAccounts.length} account{bankEntry.syncAccounts.length !== 1 ? 's' : ''}
               • {Object.keys(bankEntry.currencyBalances).length} currenc{Object.keys(bankEntry.currencyBalances).length !== 1 ? 'ies' : 'y'}
             </p>
+            
+            {/* Show account preview on desktop */}
+            {bankEntry.syncAccounts.length > 0 && (
+              <div className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                {bankEntry.syncAccounts.slice(0, 2).map((account, idx) => (
+                  <div key={idx}>• {account.account_holder_name}</div>
+                ))}
+                {bankEntry.syncAccounts.length > 2 && (
+                  <div>• ... and {bankEntry.syncAccounts.length - 2} more</div>
+                )}
+              </div>
+            )}
           </div>
         </div>
         
-        {/* Desktop Currency Balances - Right aligned like original design */}
+        {/* Desktop Currency Balances - Right aligned */}
         <div className="text-right flex-shrink-0">
           <div className="space-y-2">
             {Object.entries(bankEntry.currencyBalances).map(([currency, amount]) => (
-              <div key={currency} className={`p-3 rounded-lg ${
+              <div key={currency} className={`p-3 rounded-lg min-w-[200px] ${
                 isDarkMode ? 'bg-gray-750/50' : 'bg-gray-50'
               }`}>
                 <p className={`text-xs font-medium ${

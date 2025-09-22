@@ -2,7 +2,9 @@
 import { useState } from "react";
 import { ChevronRight, Building, CreditCard, User, } from "lucide-react";
 import { useTheme } from "../../custom-hooks/useTheme";
-import TransactionModal from "../AllTransactions";
+// import TransactionModal from "../AllTransactions";
+import { useNavigate } from "react-router-dom";
+// import { useFetchStatements } from "../../api/query";
 
 
 interface Transaction {
@@ -36,7 +38,6 @@ export const CompactAccountCard = ({
   accountType,
   isSelected,
   onTap,
-  transactions
 }: {
   accountNumber: string;
   accountHolderName: string;
@@ -50,8 +51,12 @@ export const CompactAccountCard = ({
   transactions: Transaction[];
 }) => {
   const { isDarkMode } = useTheme();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // const [isModalOpen, setIsModalOpen] = useState(false);
   const [imageError, setImageError] = useState(false);
+
+  const navigate =useNavigate();
+
+
 
   const formatBalance = (balance: any) => {
     const numBalance = parseFloat(balance) || 0;
@@ -206,7 +211,9 @@ export const CompactAccountCard = ({
           <button
             onClick={(e) => {
               e.stopPropagation(); // Prevent card selection
-              setIsModalOpen(true);
+              localStorage.setItem('accn', accountNumber)
+                navigate('/transactions');
+              // setIsModalOpen(true);
             }}
             className={`w-full flex items-center justify-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl transition-all cursor-pointer ${isDarkMode
               ? 'bg-emerald-900/30 hover:bg-emerald-800/40 border border-emerald-700/50'
@@ -235,13 +242,13 @@ export const CompactAccountCard = ({
       </div>
 
       {/* Transaction History Modal */}
-      <TransactionModal
+      {/* <TransactionModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         transactions={transactions}
         accountName={accountHolderName}
         isDarkMode={isDarkMode}
-      />
+      /> */}
     </>
   );
 };

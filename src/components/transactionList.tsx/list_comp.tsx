@@ -8,53 +8,55 @@ export const AllTransactions = ({
   transactionType, 
   accountType, 
   amount, 
-  // originatingAccountNo,
-  // transactionReferenceNo,
+  amountFormatted,
   currency,
   description,
   createdAt,
   accountHolderName,
-  originatingBank,
-  // Add fallback props for the alternative field names
+  runningBalance,
+  // valueDate,
+  // Props that match your transaction data structure
   transaction_type,
   account_type,
-  // originating_account_no,
   created_at,
-  account_holder_name,
-  originating_bank
+  account_holder_name
 }: {
   onTap: () => void;
   transactionType: string;
   accountType: string;
   amount: string;
-  originatingAccountNo: string;
-  transactionReferenceNo: string;
+  amountFormatted?: string;
   currency: string;
   description: string;
   createdAt: string;
   accountHolderName: string;
-  originatingBank: string;
+  runningBalance?: string;
+  valueDate?: string;
   // Optional fallback props
   transaction_type?: string;
   account_type?: string;
-  originating_account_no?: string;
   created_at?: string;
   account_holder_name?: string;
+  // Remove unused props that don't exist in your data
+  originatingAccountNo?: string;
+  transactionReferenceNo?: string;
+  originatingBank?: string;
   originating_bank?: string;
+  originating_account_no?: string;
 }) => {
   const { isDarkMode } = useTheme();
   
   // Use fallback values if primary props are not available
   const finalTransactionType = transactionType || transaction_type || 'unknown';
   const finalAccountType = accountType || account_type || '';
-  const finalAccountHolderName = accountHolderName || account_holder_name || 'Unknown Account Holder';
-  // const finalOriginatingAccountNo = originatingAccountNo || originating_account_no || '';
+  const finalAccountHolderName = accountHolderName || account_holder_name || 'Unknown Account';
   const finalCreatedAt = createdAt || created_at || '';
-  const finalOriginatingBank = originatingBank || originating_bank || '';
   
+  // Use formatted amount if provided, otherwise format the raw amount
+  const displayAmount = amountFormatted || formatAmount(amount);
 
   const getTransactionColor = (type: string) => {
-    if (!type) return '#64748B'; // Default color if type is undefined
+    if (!type) return '#64748B';
     
     switch (type.toLowerCase()) {
       case 'credit': return '#22C55E';
@@ -66,11 +68,11 @@ export const AllTransactions = ({
   };
 
   const getTransactionIcon = (type: string) => {
-    if (!type) return Receipt; // Default icon if type is undefined
+    if (!type) return Receipt;
     
     switch (type.toLowerCase()) {
-      case 'credit': return TrendingDown;
-      case 'debit': return TrendingUp;
+      case 'credit': return TrendingUp;
+      case 'debit': return TrendingDown;
       case 'transfer': return ArrowLeftRight;
       case 'deposit': return PiggyBank;
       default: return Receipt;
@@ -78,30 +80,29 @@ export const AllTransactions = ({
   };
 
   const getTransactionTypeText = (type: string) => {
-    if (!type) return 'Transaction'; // Default text if type is undefined
+    if (!type) return 'Transaction';
     
     switch (type.toLowerCase()) {
       case 'credit': return 'Credit';
       case 'debit': return 'Debit';
       case 'transfer': return 'Transfer';
       case 'deposit': return 'Deposit';
-      default: return 'Transaction';
+      default: return type;
     }
   };
 
-  const formatDate = (dateString: string) => {
+  function formatDate(dateString: string) {
     try {
       if (!dateString) return 'Unknown date';
       
       const date = new Date(dateString);
       
-      // Handle invalid dates
       if (isNaN(date.getTime())) {
         return dateString || 'Unknown date';
       }
       
       return date.toLocaleDateString('en-US', { 
-        month: 'long', 
+        month: 'short', 
         day: 'numeric', 
         year: 'numeric',
         hour: '2-digit', 
@@ -112,15 +113,15 @@ export const AllTransactions = ({
       console.error('Error formatting date:', e);
       return dateString || 'Unknown date';
     }
-  };
+  }
 
-  const formatAmount = (amount: string) => {
+  function formatAmount(amount: string) {
     const numAmount = parseFloat(amount) || 0;
     return new Intl.NumberFormat('en-US', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(numAmount);
-  };
+  }
 
   const color = getTransactionColor(finalTransactionType);
   const IconComponent = getTransactionIcon(finalTransactionType);
@@ -137,10 +138,11 @@ export const AllTransactions = ({
       <div className="p-3 sm:p-4">
         {/* Mobile Layout (stacked) */}
         <div className="sm:hidden">
+          {/* Header Row */}
           <div className="flex items-start justify-between mb-3">
-            <div className="flex items-center space-x-3 flex-1 min-w-0">
+            <div className="flex items-start space-x-3 flex-1 min-w-0">
               <div 
-                className="w-10 h-10 rounded-xl flex items-center justify-center border flex-shrink-0"
+                className="w-10 h-10 rounded-xl flex items-center justify-center border flex-shrink-0 mt-0.5"
                 style={{ 
                   background: `linear-gradient(135deg, ${color}15, ${color}05)`,
                   borderColor: `${color}30`
@@ -152,24 +154,26 @@ export const AllTransactions = ({
                 />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className={`font-semibold text-sm truncate ${
-                  isDarkMode ? 'text-white' : 'text-gray-900'
-                }`}>
-                  {finalAccountHolderName}
-                </h3>
-                <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} truncate`}>
+                <div className="flex items-center justify-between mb-1">
+                  <h3 className={`font-semibold text-sm truncate pr-2 ${
+                    isDarkMode ? 'text-white' : 'text-gray-900'
+                  }`}>
+                    {finalAccountHolderName}
+                  </h3>
+                </div>
+                <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} truncate mb-1.5`}>
                   {finalAccountType}
                 </p>
-                <div className="flex items-center space-x-1 mt-1">
+                <div className="flex items-center space-x-1">
                   <Clock className={`w-3 h-3 flex-shrink-0 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
                   <span className={`text-xs truncate ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    {/* {formatDate(finalCreatedAt)} */}
+                    {formatDate(finalCreatedAt)}
                   </span>   
                 </div>
               </div>
             </div>
             <div 
-              className="px-2 py-1 rounded-md text-xs font-bold tracking-wider whitespace-nowrap ml-2 flex-shrink-0"
+              className="px-2 py-1 rounded-md text-xs font-bold tracking-wider whitespace-nowrap ml-2 flex-shrink-0 mt-0.5"
               style={{ 
                 backgroundColor: `${color}20`,
                 color: color
@@ -179,27 +183,28 @@ export const AllTransactions = ({
             </div>
           </div>
           
-          <div className="flex items-center justify-between">
-            <div className="flex-1 min-w-0">
+          {/* Content Row */}
+          <div className="flex items-start justify-between">
+            <div className="flex-1 min-w-0 pr-2">
               {description && (
-                <p className={`text-xs italic truncate mb-1 ${
+                <p className={`text-xs italic truncate mb-1.5 leading-tight ${
                   isDarkMode ? 'text-gray-500' : 'text-gray-400'
                 }`}>
                   "{description}"
                 </p>
               )}
-              {finalOriginatingBank && (
-                <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} truncate`}>
-                  {finalOriginatingBank}
+              {runningBalance && (
+                <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} truncate leading-tight`}>
+                  Balance: {runningBalance}
                 </p>
               )}
             </div>
-            <div className="flex items-center space-x-2 ml-3">
+            <div className="flex items-center space-x-1 flex-shrink-0">
               <p 
-                className="text-lg font-bold whitespace-nowrap"
+                className="text-lg font-bold whitespace-nowrap text-right"
                 style={{ color }}
               >
-                {currency} {formatAmount(amount)}
+                {currency} {displayAmount}
               </p>
               <ChevronRight className={`w-4 h-4 flex-shrink-0 ${
                 isDarkMode ? 'text-gray-500' : 'text-gray-400'
@@ -209,32 +214,79 @@ export const AllTransactions = ({
         </div>
 
         {/* Desktop/Tablet Layout (horizontal) */}
-        <div className="hidden sm:flex items-center space-x-4">
-          {/* Transaction Icon */}
-          <div 
-            className="w-11 h-11 md:w-12 md:h-12 rounded-2xl flex items-center justify-center border flex-shrink-0"
-            style={{ 
-              background: `linear-gradient(135deg, ${color}15, ${color}05)`,
-              borderColor: `${color}30`
-            }}
-          >
-            <IconComponent 
-              className="w-5 h-5"
-              style={{ color }}
-            />
+        <div className="hidden sm:flex items-center justify-between space-x-4">
+          {/* Left Section - Icon and Info */}
+          <div className="flex items-center space-x-4 flex-1 min-w-0">
+            {/* Transaction Icon */}
+            <div 
+              className="w-11 h-11 md:w-12 md:h-12 rounded-2xl flex items-center justify-center border flex-shrink-0"
+              style={{ 
+                background: `linear-gradient(135deg, ${color}15, ${color}05)`,
+                borderColor: `${color}30`
+              }}
+            >
+              <IconComponent 
+                className="w-5 h-5"
+                style={{ color }}
+              />
+            </div>
+
+            {/* Transaction Info */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between mb-1.5">
+                <h3 className={`font-semibold text-sm md:text-base truncate pr-4 ${
+                  isDarkMode ? 'text-white' : 'text-gray-900'
+                }`}>
+                  {finalAccountHolderName}
+                </h3>
+                {/* Status Badge - Hidden on smaller screens */}
+                <div 
+                  className="hidden md:block px-2.5 py-1 rounded-md text-xs font-bold tracking-wider flex-shrink-0 ml-4"
+                  style={{ 
+                    backgroundColor: `${color}20`,
+                    color: color
+                  }}
+                >
+                  {getTransactionTypeText(finalTransactionType).toUpperCase()}
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-3 mb-1.5">
+                <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} truncate flex-shrink-0`}>
+                  {finalAccountType}
+                </p>
+                <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>•</span>
+                <div className="flex items-center space-x-1.5 flex-1 min-w-0">
+                  <Clock className={`w-3 h-3 flex-shrink-0 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+                  <span className={`text-xs truncate ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                    {formatDate(finalCreatedAt)}
+                  </span>
+                </div>
+              </div>
+              
+              {description && (
+                <p className={`text-xs italic truncate mb-1 leading-tight text-left ${
+                  isDarkMode ? 'text-gray-500' : 'text-gray-400'
+                }`}>
+                  "{description}"
+                </p>
+              )}
+              
+              {runningBalance && (
+                <p className={`text-xs text-left ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} truncate leading-tight`}>
+                  Balance: {runningBalance}
+                </p>
+              )}
+            </div>
           </div>
 
-          {/* Transaction Info */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between mb-1">
-              <h3 className={`font-semibold text-sm md:text-base truncate ${
-                isDarkMode ? 'text-white' : 'text-gray-900'
-              }`}>
-                {finalAccountHolderName}
-              </h3>
-              {/* Status Badge - Hidden on smaller screens */}
+          {/* Right Section - Amount and Arrow */}
+          <div className="flex items-center space-x-3 flex-shrink-0">
+            {/* Amount and Badge for medium screens */}
+            <div className="text-right">
+              {/* Show badge on medium screens only */}
               <div 
-                className="hidden md:block px-2 py-1 rounded-md text-xs font-bold tracking-wider flex-shrink-0 ml-4"
+                className="md:hidden mb-1.5 px-2.5 py-1 rounded-md text-xs font-bold tracking-wider inline-block"
                 style={{ 
                   backgroundColor: `${color}20`,
                   color: color
@@ -242,53 +294,14 @@ export const AllTransactions = ({
               >
                 {getTransactionTypeText(finalTransactionType).toUpperCase()}
               </div>
-            </div>
-            
-            <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mb-1 truncate`}>
-              {finalAccountType}
-            </p>
-            
-            <div className="flex items-center space-x-1 mb-1">
-              <Clock className={`w-3 h-3 flex-shrink-0 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
-              <span className={`text-xs truncate ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                {formatDate(finalCreatedAt)}
-              </span>
-            </div>
-            
-            {description && (
-              <p className={`text-xs italic truncate ${
-                isDarkMode ? 'text-gray-500' : 'text-gray-400'
-              }`}>
-                "{description}"
+              <p 
+                className="text-base md:text-lg font-bold whitespace-nowrap"
+                style={{ color }}
+              >
+                {currency} {displayAmount}
               </p>
-            )}
-            
-            {finalOriginatingBank && (
-              <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} truncate`}>
-                {finalOriginatingBank}
-              </p>
-            )}
-          </div>
-
-          {/* Amount Section */}
-          <div className="text-right flex-shrink-0">
-            {/* Show badge on medium screens only */}
-            <div 
-              className="md:hidden mb-1 px-2 py-1 rounded-md text-xs font-bold tracking-wider inline-block"
-              style={{ 
-                backgroundColor: `${color}20`,
-                color: color
-              }}
-            >
-              {getTransactionTypeText(finalTransactionType).toUpperCase()}
             </div>
-            <p 
-              className="text-base md:text-lg font-bold whitespace-nowrap"
-              style={{ color }}
-            >
-              {currency} {formatAmount(amount)}
-            </p>
-            <ChevronRight className={`w-4 h-4 mx-auto mt-1 ${
+            <ChevronRight className={`w-4 h-4 flex-shrink-0 ${
               isDarkMode ? 'text-gray-500' : 'text-gray-400'
             }`} />
           </div>

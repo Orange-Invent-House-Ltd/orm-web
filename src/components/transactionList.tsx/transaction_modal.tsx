@@ -10,26 +10,22 @@ export const TransactionDetailsModal = ({ transaction, isVisible, onClose }: { t
   
   if (!isVisible || !transaction) return null;
 
-  // Helper function to get field value with fallbacks
-  const getFieldValue = (primary: string, fallback: string, defaultValue: string = 'N/A') => {
-    return transaction[primary] || transaction[fallback] || defaultValue;
-  };
-
-  // Extract values with proper fallbacks
-  const transactionType = getFieldValue('type', 'transaction_type', 'unknown');
-  const accountType = getFieldValue('accountType', 'account_type', 'Unknown Account');
-  const accountHolderName = getFieldValue('accountHolderName', 'account_holder_name', 'Unknown Account Holder');
-  const originatingAccountNo = getFieldValue('originatingAccountNo', 'originating_account_no', '');
-  const originatingBank = getFieldValue('originatingBank', 'originating_bank', '');
-  const createdAt = getFieldValue('createdAt', 'created_at', '');
-  const amount = transaction.amount || '0.00';
-  const currency = transaction.currency || 'NGN';
-  const description = transaction.description || '';
-  const transactionRef = transaction.transaction_reference_no || transaction.id || 'N/A';
-  const sessionId = transaction.session_id || 'N/A';
+  // Extract values from your actual transaction data structure
+  const transactionType = transaction.Mode || 'unknown';
+  const accountType = transaction.TranCode || 'Unknown Account';
+  const accountHolderName = transaction.AcctName || 'Unknown Account Holder';
+  const originatingAccountNo = transaction.AcctNo || '';
+  const amount = transaction.Mode === 'DEBIT' ? transaction.DebitAmt : transaction.CreditAmt;
+  const amountFormatted = transaction.Mode === 'DEBIT' ? transaction.DebitAmtFormatted : transaction.CreditAmtFormatted;
+  const currency = transaction.Currency || 'NGN';
+  const description = transaction.Description || '';
+  const transactionRef = transaction.ptid || 'N/A';
+  const createdAt = transaction.TransDate || '';
+  const valueDate = transaction.ValueDate || '';
+  const runningBalance = transaction.RunningBalanceFormatted || '';
 
   const getTransactionColor = (type: string) => {
-    if (!type) return '#64748B'; // Default color if type is undefined
+    if (!type) return '#64748B';
     
     switch (type.toLowerCase()) {
       case 'credit': return '#22C55E';
@@ -41,11 +37,11 @@ export const TransactionDetailsModal = ({ transaction, isVisible, onClose }: { t
   };
 
   const getTransactionIcon = (type: string) => {
-    if (!type) return Receipt; // Default icon if type is undefined
+    if (!type) return Receipt;
     
     switch (type.toLowerCase()) {
-      case 'credit': return TrendingDown;
-      case 'debit': return TrendingUp;
+      case 'credit': return TrendingUp;
+      case 'debit': return TrendingDown;
       case 'transfer': return ArrowLeftRight;
       case 'deposit': return PiggyBank;
       default: return Receipt;
@@ -53,14 +49,14 @@ export const TransactionDetailsModal = ({ transaction, isVisible, onClose }: { t
   };
 
   const getTransactionTypeText = (type: string) => {
-    if (!type) return 'Transaction'; // Default text if type is undefined
+    if (!type) return 'Transaction';
     
     switch (type.toLowerCase()) {
       case 'credit': return 'Credit';
       case 'debit': return 'Debit';
       case 'transfer': return 'Transfer';
       case 'deposit': return 'Deposit';
-      default: return 'Transaction';
+      default: return type;
     }
   };
 
@@ -78,7 +74,6 @@ export const TransactionDetailsModal = ({ transaction, isVisible, onClose }: { t
       
       const date = new Date(dateString);
       
-      // Handle invalid dates
       if (isNaN(date.getTime())) {
         return dateString || 'Unknown date';
       }
@@ -101,88 +96,94 @@ export const TransactionDetailsModal = ({ transaction, isVisible, onClose }: { t
   const IconComponent = getTransactionIcon(transactionType);
 
   const DetailRow = ({ icon: Icon, label, value }: { icon: any; label: string; value: string | number; }) => (
-    <div className="flex items-start space-x-3 mb-3 last:mb-0">
-      <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+    <div className="flex items-start space-x-3 mb-4 last:mb-0">
+      <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${
         isDarkMode ? 'bg-gray-700' : 'bg-gray-100'
       }`}>
-        <Icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`} />
+        <Icon className={`w-4 h-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mb-0.5`}>{label}</p>
-        <p className={`text-sm font-semibold break-words ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{value || 'N/A'}</p>
+        <p className={`text-xs font-medium mb-1.5 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+          {label}
+        </p>
+        <p className={`text-sm font-semibold break-words leading-tight ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+          {value || 'N/A'}
+        </p>
       </div>
     </div>
   );
 
   const DetailSection = ({ title, children }: { title: string; children: React.ReactNode; }) => (
-    <div className={`rounded-lg sm:rounded-xl p-3 sm:p-4 border ${
+    <div className={`rounded-xl p-4 border ${
       isDarkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50 border-gray-200'
     }`}>
-      <h3 className={`text-sm font-bold mb-3 sm:mb-4 ${
-        isDarkMode ? 'text-white' : 'text-gray-900'
-      }`}>
+      <h3 className={`text-sm font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
         {title}
       </h3>
-      {children}
+      <div className="space-y-1">
+        {children}
+      </div>
     </div>
   );
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4">
-      <div className={`w-full max-w-sm sm:max-w-md rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col ${
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className={`w-full max-w-md rounded-2xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col ${
         isDarkMode ? 'bg-gray-800' : 'bg-white'
       }`}>
         {/* Header */}
         <div 
-          className="px-4 sm:px-6 py-4 sm:py-5 relative flex-shrink-0"
+          className="px-6 py-5 relative flex-shrink-0"
           style={{
             background: `linear-gradient(135deg, ${color}15, transparent)`
           }}
         >
-          <div className="flex items-center space-x-3">
-            <div 
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center border flex-shrink-0"
-              style={{ 
-                background: `linear-gradient(135deg, ${color}20, ${color}10)`,
-                borderColor: `${color}40`
-              }}
-            >
-              <IconComponent 
-                className="w-4 h-4 sm:w-5 sm:h-5"
-                style={{ color }}
-              />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h2 className={`text-base sm:text-lg font-bold truncate ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                Transaction Details
-              </h2>
-              <p className="text-sm font-semibold truncate" style={{ color }}>
-                {getTransactionTypeText(transactionType)}
-              </p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4 flex-1 min-w-0">
+              <div 
+                className="w-10 h-10 rounded-xl flex items-center justify-center border flex-shrink-0"
+                style={{ 
+                  background: `linear-gradient(135deg, ${color}20, ${color}10)`,
+                  borderColor: `${color}40`
+                }}
+              >
+                <IconComponent 
+                  className="w-5 h-5"
+                  style={{ color }}
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h2 className={`text-lg font-bold truncate ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                  Transaction Details
+                </h2>
+                <p className="text-sm font-semibold truncate mt-0.5" style={{ color }}>
+                  {getTransactionTypeText(transactionType)}
+                </p>
+              </div>
             </div>
             <button
               onClick={onClose}
-              className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition-colors flex-shrink-0 ${
+              className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors flex-shrink-0 ml-4 ${
                 isDarkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-600'
               }`}
             >
-              <X className="w-4 h-4" />
+              <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto px-4 sm:px-6 pb-4 sm:pb-6">
+        <div className="flex-1 overflow-y-auto px-6 pb-6">
           {/* Amount Display */}
-          <div className="text-center py-4 sm:py-6">
+          <div className="text-center py-6 border-b mb-6" style={{ borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }}>
             <p 
-              className="text-2xl sm:text-3xl md:text-4xl font-black mb-2 break-words"
+              className="text-3xl font-black mb-3 break-words leading-tight"
               style={{ color }}
             >
-              {currency} {formatAmount(amount)}
+              {currency} {amountFormatted || formatAmount(amount)}
             </p>
             <div 
-              className="inline-block px-2.5 sm:px-3 py-1 rounded-full text-xs font-bold tracking-wider border"
+              className="inline-block px-3 py-1.5 rounded-full text-xs font-bold tracking-wider border"
               style={{ 
                 backgroundColor: `${color}20`,
                 borderColor: `${color}40`,
@@ -193,17 +194,24 @@ export const TransactionDetailsModal = ({ transaction, isVisible, onClose }: { t
             </div>
           </div>
 
-          <div className="space-y-3 sm:space-y-4">
+          <div className="space-y-4">
             {/* Transaction Information */}
             <DetailSection title="Transaction Information">
               <DetailRow 
                 icon={Calendar}
-                label="Date & Time"
+                label="Transaction Date"
                 value={formatDate(createdAt)}
               />
+              {valueDate && valueDate !== createdAt && (
+                <DetailRow 
+                  icon={Calendar}
+                  label="Value Date"
+                  value={formatDate(valueDate)}
+                />
+              )}
               <DetailRow 
                 icon={CreditCard}
-                label="Account Type"
+                label="Transaction Code"
                 value={accountType}
               />
               <DetailRow 
@@ -211,20 +219,13 @@ export const TransactionDetailsModal = ({ transaction, isVisible, onClose }: { t
                 label="Reference Number"
                 value={transactionRef}
               />
-              {sessionId && sessionId !== 'N/A' && (
-                <DetailRow 
-                  icon={Receipt}
-                  label="Session ID"
-                  value={sessionId}
-                />
-              )}
             </DetailSection>
 
             {/* Account Details */}
             <DetailSection title="Account Details">
               <DetailRow 
                 icon={User}
-                label="Account Holder"
+                label="Account Name"
                 value={accountHolderName}
               />
               {originatingAccountNo && (
@@ -234,28 +235,10 @@ export const TransactionDetailsModal = ({ transaction, isVisible, onClose }: { t
                   value={originatingAccountNo}
                 />
               )}
-              {originatingBank && (
-                <DetailRow 
-                  icon={Building}
-                  label="Bank"
-                  value={originatingBank}
-                />
-              )}
             </DetailSection>
 
-            {/* Description */}
-            {description && (
-              <DetailSection title="Description">
-                <DetailRow 
-                  icon={FileText}
-                  label="Details"
-                  value={description}
-                />
-              </DetailSection>
-            )}
-
-            {/* Additional Information */}
-            <DetailSection title="Additional Information">
+            {/* Amount Details */}
+            <DetailSection title="Amount Details">
               <DetailRow 
                 icon={Receipt}
                 label="Transaction Type"
@@ -266,15 +249,33 @@ export const TransactionDetailsModal = ({ transaction, isVisible, onClose }: { t
                 label="Currency"
                 value={currency}
               />
+              {runningBalance && (
+                <DetailRow 
+                  icon={Building}
+                  label="Running Balance"
+                  value={runningBalance}
+                />
+              )}
             </DetailSection>
+
+            {/* Description */}
+            {description && (
+              <DetailSection title="Transaction Narration">
+                <DetailRow 
+                  icon={FileText}
+                  label="Details"
+                  value={description}
+                />
+              </DetailSection>
+            )}
           </div>
         </div>
 
         {/* Fixed Close Button */}
-        <div className="flex-shrink-0 px-4 sm:px-6 pb-4 sm:pb-6 pt-2">
+        <div className="flex-shrink-0 px-6 pb-6 pt-4">
           <button
             onClick={onClose}
-            className="w-full py-3 sm:py-3.5 rounded-xl sm:rounded-2xl font-semibold text-white shadow-lg transition-all duration-300 hover:shadow-xl text-sm sm:text-base"
+            className="w-full py-3.5 rounded-xl font-semibold text-white shadow-lg transition-all duration-300 hover:shadow-xl text-base"
             style={{ 
               background: `linear-gradient(135deg, ${color}, ${color}cc)`,
               boxShadow: `0 10px 30px ${color}40`

@@ -7,6 +7,8 @@ import { useState } from "react";
 import Footer from "../components/reuseable/footer";
 import { NavigationBar } from "../components/reuseable/buttom_nav";
 import { useTransactionStore } from "../store/transactions";
+import { useFetchStatements } from "../api/query";
+import LoadingOverlay from "../components/reuseable/loading-overlay";
 
 // Main Transaction List Component
 const TransactionList = () => {
@@ -14,17 +16,19 @@ const TransactionList = () => {
   const [showModal, setShowModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(true);
+  const [transactionType, setTransactionType] = useState('all');
 
-  // Use the Zustand store
+  // Use the Zustand store only for selected transaction
   const { 
-    transactions, 
     selectedTransaction, 
-    filters,
-    setSelectedTransaction,
-    setFilters,
-    getFilteredTransactions 
+    setSelectedTransaction
   } = useTransactionStore();
 
+  // Get transactions directly from API
+  const account_number = localStorage.getItem('accn');
+  const { data, isLoading } = useFetchStatements({ account_number,search: searchQuery, });
+
+  console.log(data);
 
   const showTransactionDetails = (transaction: any) => {
     setSelectedTransaction(transaction);
@@ -38,25 +42,22 @@ const TransactionList = () => {
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
-    setFilters({ searchQuery: e.target.value });
   };
-
-  const handleFilterChange = (type: string) => {
-    setFilters({ transactionType: type });
-  };
+;
 
   const clearFilters = () => {
     setSearchQuery('');
-    setFilters({ transactionType: 'all', searchQuery: '' });
+    setTransactionType('all');
   };
 
-  const filteredTransactions = getFilteredTransactions();
+  
 
   return (
     <div className={`min-h-screen transition-all duration-300 ${
       isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
     }`}>
       {/* Header */}
+      {isLoading && <LoadingOverlay/>}
       <header className={`shadow-sm border-b transition-all duration-300 ${
         isDarkMode 
           ? 'bg-gray-800 border-gray-700' 
@@ -117,7 +118,7 @@ const TransactionList = () => {
                 }`} />
                 <input
                   type="text"
-                  placeholder="Search transactions..."
+                  placeholder="Search by narration, description..."
                   value={searchQuery}
                   onChange={handleSearch}
                   className={`w-full pl-10 pr-4 py-2 bg-transparent border-none outline-none ${
@@ -131,28 +132,8 @@ const TransactionList = () => {
                   isDarkMode ? 'bg-gray-700 text-gray-400 hover:bg-gray-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
-                <X className="w-4 h-4"  onClick={() => setShowFilters(!showFilters)}/>
+                <X className="w-4 h-4" />
               </button>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              {['all', 'credit', 'debit', 'transfer', 'deposit'].map((type) => (
-                <button
-                  key={type}
-                  onClick={() => handleFilterChange(type)}
-                  className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    filters.transactionType === type
-                      ? isDarkMode
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-blue-600 text-white'
-                      : isDarkMode
-                      ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {type === 'all' ? 'All' : type.charAt(0).toUpperCase() + type.slice(1)}
-                </button>
-              ))}
             </div>
           </div>
         </div>
@@ -162,14 +143,13 @@ const TransactionList = () => {
       <main className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4">
         {/* Transaction Count */}
         <div className="mb-4 sm:mb-6">
-          <p className={`text-xs sm:text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            {filteredTransactions.length} transaction{filteredTransactions.length !== 1 ? 's' : ''} found
-            {(filters.transactionType !== 'all' || filters.searchQuery) && ' (filtered)'}
-          </p>
+          {data?.data?.length !== undefined &&  <p className={`text-xs sm:text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+            {data?.data?.length} transaction{data?.data?.length !== 1 ? 's' : ''} found
+          </p> }
         </div>
 
         {/* Transactions List */}
-        {filteredTransactions.length === 0 ? (
+        {data?.data?.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 sm:py-20">
             <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mb-3 sm:mb-4 ${
               isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
@@ -177,9 +157,9 @@ const TransactionList = () => {
               <Receipt className={`w-6 h-6 sm:w-8 sm:h-8 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`} />
             </div>
             <p className={`text-base sm:text-lg font-semibold ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              {transactions.length === 0 ? 'No transactions found' : 'No matching transactions found'}
+              {data.length === 0 ? 'No transactions found' : 'No matching transactions found'}
             </p>
-            {(filters.transactionType !== 'all' || filters.searchQuery) && (
+            {(transactionType !== 'all' || searchQuery) && (
               <button
                 onClick={clearFilters}
                 className={`mt-4 px-4 py-2 rounded-lg text-sm ${
@@ -194,20 +174,23 @@ const TransactionList = () => {
           </div>
         ) : (
           <div className="space-y-4 sm:space-y-2">
-            {filteredTransactions.map((transaction) => (
+            {data?.data?.map((transaction:any) => (
               <AllTransactions
                 key={transaction.id}
                 onTap={() => showTransactionDetails(transaction)}
-                transactionType={transaction.type || ''}
-                accountType={transaction.accountType || ''}
-                amount={transaction.amount}
-                originatingAccountNo={transaction.originatingAccountNo || ''}
-                transactionReferenceNo={transaction.transaction_reference_no}
-                currency={transaction.currency}
-                description={transaction.description || ''}
-                createdAt={transaction.created_at || ''}
-                accountHolderName={transaction.account_holder_name || ''}
-                originatingBank={transaction.originatingAccountNo || ''}
+                transactionType={transaction.Mode || ''}
+                accountType={transaction.TranCode || ''}
+                amount={transaction.Mode === 'DEBIT' ? transaction.DebitAmt : transaction.CreditAmt}
+                amountFormatted={transaction.Mode === 'DEBIT' ? transaction.DebitAmtFormatted : transaction.CreditAmtFormatted}
+                originatingAccountNo={transaction.AcctNo || ''}
+                transactionReferenceNo={transaction.ptid}
+                currency={transaction.Currency}
+                description={transaction.Description || ''}
+                createdAt={transaction.TransDate || ''}
+                accountHolderName={transaction.AcctName || ''}
+                runningBalance={transaction.RunningBalanceFormatted}
+                valueDate={transaction.ValueDate}
+              
               />
             ))}
           </div>

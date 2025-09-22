@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchAggregatedBalance, getBankImages } from "..";
+import { fetchAggregatedBalance, fetchStatements, } from "..";
 
 // export const useFetchBanks = () => {
 //   return useQuery({
@@ -9,18 +9,25 @@ import { fetchAggregatedBalance, getBankImages } from "..";
 //   });
 // };
 
-export const useFetchBankImages = () => {
-  return useQuery({
-    queryFn: getBankImages,
-    queryKey: ["bankImages"],
-    enabled: true
-  });
-};
+// export const useFetchBankImages = () => {
+//   return useQuery({
+//     queryFn: getBankImages,
+//     queryKey: ["bankImages"],
+//     enabled: true
+//   });
+// };
 
 // use agreegated balance
 export const useFetchAggregatedBalance = () => {
   return useQuery({
     queryFn: () => fetchAggregatedBalance(),
     queryKey: ["aggregatedBalance"],
+  });
+}
+// use fetch statements
+export const useFetchStatements = (search?:any, start?:any, end?:any, account_number?:any) => {
+  return useQuery({
+    queryFn: () => fetchStatements(search, start, end, account_number,),
+    queryKey: ["statements", search, start, end, account_number],
   });
 }
