@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react";
-import { ChevronRight, Building, CreditCard, User, } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ChevronRight, Building, CreditCard, User } from "lucide-react";
 import { useTheme } from "../../custom-hooks/useTheme";
-// import TransactionModal from "../AllTransactions";
 import { useNavigate } from "react-router-dom";
-// import { useFetchStatements } from "../../api/query";
-
+import { useFetchStatements } from "../../api/query";
+import { useTransactionStore } from "../../store/transactions";
+import LoadingOverlay from "../reuseable/loading-overlay";
 
 interface Transaction {
   accountNumber: string;
@@ -24,8 +24,6 @@ interface Transaction {
   balance: number;
   runningBalance: number;
 }
-
-
 
 // Full Details Account Card Component
 export const CompactAccountCard = ({
@@ -51,12 +49,67 @@ export const CompactAccountCard = ({
   transactions: Transaction[];
 }) => {
   const { isDarkMode } = useTheme();
-  // const [isModalOpen, setIsModalOpen] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [isCurrentlyLoading, setIsCurrentlyLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const navigate =useNavigate();
+  const {
+    loadTransactionsSuccess,
+    loadTransactionsError,
+    startLoading,
+    currentAccountNumber,
+    isLoading: globalIsLoading
+  } = useTransactionStore();
 
 
+  // Only fetch when we have a current account number set and it matches this card, and accountNumber is defined
+  const shouldFetch = !!accountNumber && currentAccountNumber === accountNumber;
+
+  // Only call useFetchStatements if shouldFetch is true
+  const account_number = shouldFetch && accountNumber ? { account_number: accountNumber } : undefined;
+  const { data, isLoading, error } = useFetchStatements(account_number || {});
+
+  // Track if this specific card is loading
+  useEffect(() => {
+    if (shouldFetch) {
+      setIsCurrentlyLoading(isLoading);
+    } else {
+      setIsCurrentlyLoading(false);
+    }
+  }, [isLoading, shouldFetch]);
+
+  // Disable loading when data or error is present
+  useEffect(() => {
+    if ((data || error) && shouldFetch) {
+      setIsCurrentlyLoading(false);
+    }
+  }, [data, error, shouldFetch]);
+
+  // Handle the navigation and data fetching
+  const [shouldStartFetch, setShouldStartFetch] = useState(false);
+
+  const handlenav = () => {
+    // Only start loading/fetching, do not navigate yet
+    setShouldStartFetch(true);
+    startLoading({ accountNumber });
+  };
+
+  // Update store and navigate when data changes and fetch was triggered from this card
+  useEffect(() => {
+    if (data && shouldFetch && shouldStartFetch) {
+      loadTransactionsSuccess(data?.data, { accountNumber });
+      setShouldStartFetch(false);
+      navigate('/transactions');
+    }
+  }, [data, loadTransactionsSuccess, shouldFetch, accountNumber, shouldStartFetch, navigate]);
+
+  // Update error state and reset fetch trigger
+  useEffect(() => {
+    if (error && shouldFetch && shouldStartFetch) {
+      loadTransactionsError(error.message || 'Failed to fetch transactions');
+      setShouldStartFetch(false);
+    }
+  }, [error, loadTransactionsError, shouldFetch, shouldStartFetch]);
 
   const formatBalance = (balance: any) => {
     const numBalance = parseFloat(balance) || 0;
@@ -105,6 +158,8 @@ export const CompactAccountCard = ({
 
   return (
     <>
+      {/* Only show loading overlay if this specific card is loading and the fetch is for this card */}
+      {isCurrentlyLoading && shouldFetch && <LoadingOverlay />}
       <div
         onClick={onTap}
         className={`
@@ -117,11 +172,11 @@ export const CompactAccountCard = ({
           flex flex-col
           ${isSelected
             ? (isDarkMode
-            ? 'bg-emerald-900/30 border-emerald-500 shadow-emerald-500/20'
-            : 'bg-emerald-50 border-emerald-300 shadow-emerald-200/50')
+              ? 'bg-emerald-900/30 border-emerald-500 shadow-emerald-500/20'
+              : 'bg-emerald-50 border-emerald-300 shadow-emerald-200/50')
             : (isDarkMode
-            ? 'bg-gray-800 border-gray-700 hover:border-emerald-600 hover:bg-gray-800/80'
-            : 'bg-white border-gray-200 hover:border-emerald-300 hover:shadow-emerald-100/50')
+              ? 'bg-gray-800 border-gray-700 hover:border-emerald-600 hover:bg-gray-800/80'
+              : 'bg-white border-gray-200 hover:border-emerald-300 hover:shadow-emerald-100/50')
           }
         `}
       >
@@ -210,22 +265,26 @@ export const CompactAccountCard = ({
         <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-opacity-20 border-gray-400">
           <button
             onClick={(e) => {
-              e.stopPropagation(); // Prevent card selection
-              localStorage.setItem('accn', accountNumber)
-                navigate('/transactions');
-              // setIsModalOpen(true);
+              e.stopPropagation(); // Prevent card click
+              handlenav();
             }}
-            className={`w-full flex items-center justify-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl transition-all cursor-pointer ${isDarkMode
+            disabled={isCurrentlyLoading || globalIsLoading || shouldStartFetch}
+            className={`w-full flex items-center justify-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${isDarkMode
               ? 'bg-emerald-900/30 hover:bg-emerald-800/40 border border-emerald-700/50'
               : 'bg-emerald-50/50 hover:bg-emerald-100/70 border border-emerald-200/50'
               }`}
           >
             <span className={`text-xs sm:text-sm font-semibold ${isDarkMode ? 'text-emerald-300' : 'text-emerald-700'
               }`}>
-              View Transaction History
+              {isCurrentlyLoading && shouldFetch
+                ? 'Loading Transactions...'
+                : 'View Transaction History'
+              }
             </span>
-            <ChevronRight className={`w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'
-              }`} />
+            {!isCurrentlyLoading && (
+              <ChevronRight className={`w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'
+                }`} />
+            )}
           </button>
         </div>
 
@@ -240,15 +299,6 @@ export const CompactAccountCard = ({
           </div>
         </div>
       </div>
-
-      {/* Transaction History Modal */}
-      {/* <TransactionModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        transactions={transactions}
-        accountName={accountHolderName}
-        isDarkMode={isDarkMode}
-      /> */}
     </>
   );
 };

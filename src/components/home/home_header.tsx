@@ -11,13 +11,13 @@ export const HeaderCard = ({
   isVisible,
   onToggleVisibility
 }: {
-    title2?: string;
-    title?: string;
-    currency?: string;
-    amount?: number;
-    amount2?: number;
-    isVisible: boolean;
-    onToggleVisibility: () => void;
+  title2?: string;
+  title?: string;
+  currency?: string;
+  amount?: number;
+  amount2?: number;
+  isVisible: boolean;
+  onToggleVisibility: () => void;
 }) => {
   const { isDarkMode } = useTheme();
 
@@ -49,7 +49,7 @@ export const HeaderCard = ({
 
   return (
     <div className={`
-      relative overflow-hidden w-full
+      relative overflow-auto md:w-[400px] w-full
       min-w-0 flex-shrink-0 flex-grow
       rounded-2xl p-1 shadow-xl
       transition-all duration-300 hover:shadow-2xl hover:-translate-y-1

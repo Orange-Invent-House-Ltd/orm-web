@@ -5,13 +5,15 @@ import { useTheme } from '../custom-hooks/useTheme';
 import { HeaderCard } from '../components/home/home_header';
 import { AiFinancialPredictionCard } from '../components/home/ai_prediction_card';
 import { RevenueBarChart, RevenueLineChart } from '../components/charts/barCharts';
-// import { SearchModal } from '../components/home/search_modal';
+import { SearchModal } from '../components/home/search_modal';
 import LoadingOverlay from '../components/reuseable/loading-overlay';
 import Footer from '../components/reuseable/footer';
 import { NavigationBar } from '../components/reuseable/buttom_nav';
 // import { useNavigate } from 'react-router-dom';
-import { useFetchAggregatedBalance } from '../api/query';
+import { useFetchAggregatedBalance, useFetchStatements } from '../api/query';
 import { BankListItem } from '../components/home/bank_list';
+import { useTransactionStore } from '../store/transactions';
+import { useNavigate } from 'react-router-dom';
 
 // Updated interfaces to match API structure and store requirements
 interface ApiAccount {
@@ -49,6 +51,7 @@ const HomeScreen = () => {
   const [activeTab, setActiveTab] = useState<'bar' | 'line'>('bar');
   const { data, isLoading, error } = useFetchAggregatedBalance();
 
+  const navigate = useNavigate();
   // Parse balances by currency and accounts from API response
   const balancesByCurrency = data?.balancesByCurrency || {};
   const aggregatedAccounts = data?.aggregatedAccounts || [];
@@ -77,11 +80,11 @@ const HomeScreen = () => {
     // Group accounts by extracting bank information from account names
     // Since we don't have explicit bank names, we'll group by currency and account type
     const bankGroups: { [key: string]: ApiAccount[] } = {};
-    
+
     aggregatedAccounts.forEach((account: any) => {
       // Extract potential bank identifier or use account type
       let bankKey = 'Kaduna State Government'; // Default since all accounts seem to be government accounts
-      
+
       // You can customize this logic based on your actual bank identification needs
       if (account.accountName.includes('TSA')) {
         bankKey = 'Treasury Single Account (TSA)';
@@ -140,6 +143,8 @@ const HomeScreen = () => {
   };
 
   const bankEntries = createBankEntries();
+  const { setTransactions } = useTransactionStore();
+  const { data: trasdata } = useFetchStatements();
 
   // Toggle balance visibility
   const toggleBalanceVisibility = () => {
@@ -157,8 +162,8 @@ const HomeScreen = () => {
         <div className="text-center">
           <h2 className="text-xl font-semibold text-red-600 mb-2">Error Loading Data</h2>
           <p className="text-gray-600">{error.message || 'Failed to fetch bank data'}</p>
-          <button 
-            onClick={() => window.location.reload()} 
+          <button
+            onClick={() => window.location.reload()}
             className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
           >
             Retry
@@ -169,27 +174,24 @@ const HomeScreen = () => {
   }
 
   return (
-    <div className={`transition-all duration-300 w-full min-h-screen sm:p-6 p-2 ${
-      isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
-    }`}>
-      {isLoading && <LoadingOverlay />}
-      
-      {/* Header */}
-      <header className={`sticky top-0 z-40 shadow-sm border-b transition-all duration-300 ${
-        isDarkMode 
-          ? 'bg-gray-800 border-gray-700' 
-          : 'bg-white border-gray-200'
+    <div className={`transition-all duration-300 w-full min-h-screen sm:p-6 p-2 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
       }`}>
+      {isLoading && <LoadingOverlay />}
+
+      {/* Header */}
+      <header className={`sticky top-0 z-40 shadow-sm border-b transition-all duration-300 ${isDarkMode
+        ? 'bg-gray-800 border-gray-700'
+        : 'bg-white border-gray-200'
+        }`}>
         <div className="w-full mx-auto px-3 sm:px-4 lg:px-6">
           <div className="flex items-center justify-between h-14 sm:h-16">
             <div className="flex items-center space-x-2 sm:space-x-4 min-w-0 flex-1">
               <button
-                onClick={() => setIsSearchVisible(!isSearchVisible)}
-                className={`p-2 rounded-lg transition-colors flex-shrink-0 ${
-                  isDarkMode 
-                    ? 'hover:bg-gray-700 text-gray-400' 
-                    : 'hover:bg-gray-100 text-gray-600'
-                }`}
+                onClick={() => setIsSearchVisible(true)}
+                className={`p-2 rounded-lg transition-colors flex-shrink-0 ${isDarkMode
+                  ? 'hover:bg-gray-700 text-gray-400'
+                  : 'hover:bg-gray-100 text-gray-600'
+                  }`}
               >
                 {isSearchVisible ? (
                   <X className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -197,20 +199,18 @@ const HomeScreen = () => {
                   <Search className="w-4 h-4 sm:w-5 sm:h-5" />
                 )}
               </button>
-              <h1 className={`text-sm sm:text-lg lg:text-xl font-semibold truncate ${
-                isDarkMode ? 'text-white' : 'text-gray-900'
-              }`}>
+              <h1 className={`text-sm sm:text-lg lg:text-xl font-semibold truncate ${isDarkMode ? 'text-white' : 'text-gray-900'
+                }`}>
                 Kaduna State Revenue Monitoring
               </h1>
             </div>
-            
+
             <button
               onClick={toggleTheme}
-              className={`p-2 rounded-lg transition-colors flex-shrink-0 ${
-                isDarkMode 
-                  ? 'hover:bg-gray-700 text-yellow-500' 
-                  : 'hover:bg-gray-100 text-gray-600'
-              }`}
+              className={`p-2 rounded-lg transition-colors flex-shrink-0 ${isDarkMode
+                ? 'hover:bg-gray-700 text-yellow-500'
+                : 'hover:bg-gray-100 text-gray-600'
+                }`}
             >
               {isDarkMode ? (
                 <Sun className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -227,14 +227,12 @@ const HomeScreen = () => {
         {/* Balance Overview Header */}
         <div className="flex flex-row items-center justify-between mb-6 sm:mb-8 space-y-4 sm:space-y-0">
           <div className="min-w-0">
-            <h2 className={`text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2 ${
-              isDarkMode ? 'text-white' : 'text-gray-900'
-            }`}>
+            <h2 className={`text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'
+              }`}>
               Balance Overview
             </h2>
-            <p className={`text-sm sm:text-base ${
-              isDarkMode ? 'text-gray-400' : 'text-gray-600'
-            }`}>
+            <p className={`text-sm sm:text-base ${isDarkMode ? 'text-gray-400' : 'text-gray-600'
+              }`}>
               Monitor your financial metrics
             </p>
           </div>
@@ -278,20 +276,34 @@ const HomeScreen = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 space-y-2 sm:space-y-0">
             <div className="flex items-center space-x-3">
               <div className="w-1 h-4 sm:h-6 bg-gradient-to-b from-emerald-500 to-teal-600 rounded-full"></div>
-              <h3 className={`text-lg sm:text-xl font-semibold ${
-                isDarkMode ? 'text-white' : 'text-gray-900'
-              }`}>
+              <h3 className={`text-lg sm:text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'
+                }`}>
                 Account Groups
               </h3>
             </div>
-            <div className={`px-3 py-1 rounded-lg self-start sm:self-center ${
-              isDarkMode ? 'bg-emerald-900/30' : 'bg-emerald-100'
-            }`}>
-              <span className={`text-sm font-medium ${
-                isDarkMode ? 'text-emerald-400' : 'text-emerald-600'
-              }`}>
-                {Object.keys(balancesByCurrency).length} currencies • {aggregatedAccounts.length} accounts
-              </span>
+            <div>
+              <div className={`px-3 py-1 rounded-lg self-start sm:self-center ${isDarkMode ? 'bg-emerald-900/30' : 'bg-emerald-100'
+                }`}>
+                <span className={`text-sm font-medium ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'
+                  }`}>
+                  {Object.keys(balancesByCurrency).length} currencies • {aggregatedAccounts.length} accounts
+                </span>
+              </div>
+              <div className={`px-3 py-1 mt-4 rounded-lg self-start sm:self-center ${isDarkMode ? 'bg-emerald-900/30' : 'bg-emerald-100'
+                }`}>
+                <button
+                  onClick={() => {
+                    setTransactions(trasdata?.data);
+                    navigate('/transactions');
+
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                  }}
+                  className={`text-md cursor-pointer ${isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                    }`}>
+
+                  View all Transactions
+                </button>
+              </div>
             </div>
           </div>
 
@@ -318,41 +330,37 @@ const HomeScreen = () => {
         {/* Charts Section */}
         <div className="mb-6 sm:mb-8">
           <div className="mb-4 sm:mb-6">
-            <h3 className={`text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-left ${
-              isDarkMode ? 'text-white' : 'text-gray-900'
-            }`}>
+            <h3 className={`text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-left ${isDarkMode ? 'text-white' : 'text-gray-900'
+              }`}>
               Transaction Charts
             </h3>
-            
+
             {/* Tab Bar */}
-            <div className={`p-1 rounded-xl inline-flex w-full sm:w-auto ${
-              isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
-            }`}>
+            <div className={`p-1 rounded-xl inline-flex w-full sm:w-auto ${isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
+              }`}>
               <button
                 onClick={() => setActiveTab('bar')}
-                className={`flex-1 sm:flex-none px-4 sm:px-6 py-2 rounded-lg font-medium transition-colors text-sm sm:text-base ${
-                  activeTab === 'bar'
-                    ? (isDarkMode 
-                        ? 'bg-gray-700 text-white shadow-sm' 
-                        : 'bg-white text-gray-900 shadow-sm')
-                    : (isDarkMode 
-                        ? 'text-gray-400 hover:text-white' 
-                        : 'text-gray-600 hover:text-gray-900')
-                }`}
+                className={`flex-1 sm:flex-none px-4 sm:px-6 py-2 rounded-lg font-medium transition-colors text-sm sm:text-base ${activeTab === 'bar'
+                  ? (isDarkMode
+                    ? 'bg-gray-700 text-white shadow-sm'
+                    : 'bg-white text-gray-900 shadow-sm')
+                  : (isDarkMode
+                    ? 'text-gray-400 hover:text-white'
+                    : 'text-gray-600 hover:text-gray-900')
+                  }`}
               >
                 Bar Chart
               </button>
               <button
                 onClick={() => setActiveTab('line')}
-                className={`flex-1 sm:flex-none px-4 sm:px-6 py-2 rounded-lg font-medium transition-colors text-sm sm:text-base ${
-                  activeTab === 'line'
-                    ? (isDarkMode 
-                        ? 'bg-gray-700 text-white shadow-sm' 
-                        : 'bg-white text-gray-900 shadow-sm')
-                    : (isDarkMode 
-                        ? 'text-gray-400 hover:text-white' 
-                        : 'text-gray-600 hover:text-gray-900')
-                }`}
+                className={`flex-1 sm:flex-none px-4 sm:px-6 py-2 rounded-lg font-medium transition-colors text-sm sm:text-base ${activeTab === 'line'
+                  ? (isDarkMode
+                    ? 'bg-gray-700 text-white shadow-sm'
+                    : 'bg-white text-gray-900 shadow-sm')
+                  : (isDarkMode
+                    ? 'text-gray-400 hover:text-white'
+                    : 'text-gray-600 hover:text-gray-900')
+                  }`}
               >
                 Line Chart
               </button>
@@ -385,11 +393,11 @@ const HomeScreen = () => {
       </main>
 
       {/* Search Modal */}
-      {/* <SearchModal
+      <SearchModal
         isVisible={isSearchVisible}
         onClose={() => setIsSearchVisible(false)}
-      /> */}
-      <Footer/>
+      />
+      <Footer />
       <NavigationBar />
     </div>
   );

@@ -25,9 +25,10 @@ export const useFetchAggregatedBalance = () => {
   });
 }
 // use fetch statements
-export const useFetchStatements = (search?:any, start?:any, end?:any, account_number?:any) => {
+export const useFetchStatements = (search?: any, start?: any, end?: any, account_number?: any) => {
   return useQuery({
     queryFn: () => fetchStatements(search, start, end, account_number,),
     queryKey: ["statements", search, start, end, account_number],
+    // enabled: !!account_number || !!search
   });
 }
