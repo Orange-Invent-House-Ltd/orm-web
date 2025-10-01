@@ -65,10 +65,14 @@ export const CompactAccountCard = ({
   // In CompactAccountCard component
   const shouldFetch = !!accountNumber && currentAccountNumber === accountNumber;
 
+  // In CompactAccountCard component
   const { data, isLoading, error } = useFetchStatements(
-    shouldFetch ? { account_number: accountNumber } : undefined
+    shouldFetch ? {
+      size: 100,
+      page: 1,
+      account_number: accountNumber
+    } : undefined
   );
-
 
   // Track if this specific card is loading
   useEffect(() => {
@@ -98,7 +102,13 @@ export const CompactAccountCard = ({
   // Update store and navigate when data changes and fetch was triggered from this card
   useEffect(() => {
     if (data && shouldFetch && shouldStartFetch) {
-      loadTransactionsSuccess(data?.data, { accountNumber });
+      const meta = data?.meta ? {
+        currentPage: data.meta.currentPage,
+        totalPages: data.meta.totalPages,
+        pageSize: data.meta.pageSize,
+        totalResults: data.meta.totalResults
+      } : null;
+      loadTransactionsSuccess(data?.data, { accountNumber }, meta);
       setShouldStartFetch(false);
       navigate('/transactions');
     }
@@ -165,7 +175,7 @@ export const CompactAccountCard = ({
         onClick={onTap}
         className={`
           w-full min-h-[280px] sm:min-h-[320px] lg:min-h-[350px] 
-          max-w-full sm:max-w-sm mx-auto
+          max-w-full sm:max-w-md mx-auto
           rounded-xl sm:rounded-2xl p-4 sm:p-5 lg:p-6 
           shadow-sm border 
           transition-all duration-300 cursor-pointer 

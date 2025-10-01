@@ -11,39 +11,39 @@ const LoginPage = React.lazy(() => import('../src/auth/login'))
 
 function App() {
   const { isDarkMode } = useTheme();
-  
+
   return (
     <div className={`flex justify-center min-h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-white'} p-2`}>
-      <div className='xl:w-[70%] lg:w-[75%] md:w-[90%] sm:w-full w-full'>
+      <div className='w-full'>
         <Routes>
           {/* Remove "orm/" prefix from routes since basename handles it */}
-          <Route 
-            path="/" 
+          <Route
+            path="/"
             element={
               <ProtectedRoute>
                 <HomePage />
               </ProtectedRoute>
             }
           />
-          
-          <Route 
-            path="/:bankName" 
+
+          <Route
+            path="/:bankName"
             element={
               <ProtectedRoute>
                 <BankAccountList />
               </ProtectedRoute>
             }
           />
-          
-          <Route 
-            path="/transactions" 
+
+          <Route
+            path="/transactions"
             element={
               <ProtectedRoute>
                 <TransactionList />
               </ProtectedRoute>
             }
           />
-          
+
           <Route path="/login" element={<LoginPage />} />
         </Routes>
       </div>

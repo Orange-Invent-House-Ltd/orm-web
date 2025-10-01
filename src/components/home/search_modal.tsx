@@ -32,7 +32,7 @@ export const SearchModal = ({
 
     // Only fetch when shouldSearch is true and we have query parameters
     const { data, isLoading, error } = useFetchStatements(
-        shouldSearch && searchQueryParams ? searchQueryParams : undefined
+        shouldSearch && searchQueryParams ? { ...searchQueryParams, page: 1, size: 100 } : undefined
     );
 
     // Close modal when Escape key is pressed
@@ -65,8 +65,14 @@ export const SearchModal = ({
     // Handle search results
     useEffect(() => {
         if (shouldSearch && data) {
-            // Update store with search results
-            loadTransactionsSuccess(data?.data || data, { searchTerm });
+            // Update store with search results and meta
+            const meta = data?.meta ? {
+                currentPage: data.meta.currentPage,
+                totalPages: data.meta.totalPages,
+                pageSize: data.meta.pageSize,
+                totalResults: data.meta.totalResults,
+            } : null;
+            loadTransactionsSuccess(data?.data || data, { searchTerm }, meta);
 
             // Navigate to transaction list
             navigate('/transactions');

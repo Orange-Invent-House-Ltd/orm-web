@@ -177,12 +177,12 @@ const HomeScreen = () => {
   }
 
   return (
-    <div className={`transition-all duration-300 w-full min-h-screen sm:p-6 p-2 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
-      }`}>
+    <div className={`mx-auto transition-all duration-300 w-full min-h-screen sm:p-6 p-2 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
+      } md:w-[75%] w-full`}>
       {isLoading && <LoadingOverlay />}
 
       {/* Header */}
-      <header className={`sticky top-0 z-40 shadow-sm border-b transition-all duration-300 ${isDarkMode
+      <header className={`mx-auto sticky top-0 z-40 shadow-sm border-b transition-all duration-300 ${isDarkMode
         ? 'bg-gray-800 border-gray-700'
         : 'bg-white border-gray-200'
         }`}>

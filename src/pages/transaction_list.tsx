@@ -8,6 +8,7 @@ import Footer from "../components/reuseable/footer";
 import { NavigationBar } from "../components/reuseable/buttom_nav";
 import { useTransactionStore } from "../store/transactions";
 import LoadingOverlay from "../components/reuseable/loading-overlay";
+import { useFetchStatements } from "../api/query";
 
 // Main Transaction List Component
 const TransactionList = () => {
@@ -19,6 +20,8 @@ const TransactionList = () => {
   const [filteredTransactions, setFilteredTransactions] = useState<any[]>([]);
   const [totalCredit, setTotalCredit] = useState(0);
   const [totalDebit, setTotalDebit] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
   // Use the Zustand store
   const {
@@ -30,6 +33,8 @@ const TransactionList = () => {
     currentAccountNumber,
     searchTerm: storeSearchTerm,
     setError,
+    loadTransactionsSuccess,
+    meta,
   } = useTransactionStore();
 
   // Calculate totals and filter transactions
@@ -75,7 +80,49 @@ const TransactionList = () => {
     setFilteredTransactions(filtered);
     setTotalCredit(creditTotal);
     setTotalDebit(debitTotal);
+    // Reset to first page when filters/search/source data change
+    setCurrentPage(1);
   }, [transactions, searchQuery, transactionType]);
+
+  // If an account is selected, use server-side pagination; else fallback to client-side
+  const serverMode = !!currentAccountNumber;
+
+  // Trigger server fetch when in serverMode
+  const { data: pageData, isLoading: pageIsLoading, error: pageError } = useFetchStatements(
+    serverMode ? {
+      account_number: currentAccountNumber || undefined,
+      page: currentPage,
+      size: pageSize,
+    } : undefined
+  );
+
+  // On server data arrival, update store with transactions and meta
+  useEffect(() => {
+    if (serverMode && pageData) {
+      const apiMeta = pageData?.meta ? {
+        currentPage: pageData.meta.currentPage,
+        totalPages: pageData.meta.totalPages,
+        pageSize: pageData.meta.pageSize,
+        totalResults: pageData.meta.totalResults,
+      } : undefined;
+      loadTransactionsSuccess(pageData?.data || [], { accountNumber: currentAccountNumber || undefined }, apiMeta || null);
+    }
+  }, [serverMode, pageData, loadTransactionsSuccess, currentAccountNumber]);
+
+  // Surface any page error into store error without clearing transactions
+  useEffect(() => {
+    if (serverMode && pageError) {
+      setError(pageError.message || 'Failed to load transactions');
+    }
+  }, [serverMode, pageError, setError]);
+
+  // Pagination calculations
+  const totalItems = serverMode ? (meta?.totalResults || filteredTransactions.length) : filteredTransactions.length;
+  const totalPages = serverMode ? (meta?.totalPages || 1) : Math.max(1, Math.ceil(totalItems / pageSize));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const startIdx = serverMode ? ((meta?.currentPage || safeCurrentPage) - 1) * pageSize : (safeCurrentPage - 1) * pageSize;
+  const endIdx = serverMode ? Math.min(startIdx + (transactions?.length || 0), totalItems) : Math.min(startIdx + pageSize, totalItems);
+  const paginatedTransactions = serverMode ? filteredTransactions : filteredTransactions.slice(startIdx, endIdx);
 
   // Format currency function
   // const formatCurrency = (amount: number, currency: string = 'NGN') => {
@@ -132,7 +179,7 @@ const TransactionList = () => {
   const isFiltered = searchQuery.trim() || transactionType !== 'all';
 
   // Show loading state
-  if (isLoading) {
+  if (isLoading || pageIsLoading) {
     return (
       <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
         <LoadingOverlay />
@@ -141,7 +188,7 @@ const TransactionList = () => {
   }
 
   return (
-    <div className={`min-h-screen transition-all duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+    <div className={`min-h-screen transition-all duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'} md:w-=[75%] w-full`}>
       {/* Header */}
       <header className={`shadow-sm border-b transition-all duration-300 ${isDarkMode
         ? 'bg-gray-800 border-gray-700'
@@ -264,7 +311,8 @@ const TransactionList = () => {
           <div className="mb-4 sm:mb-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
               <p className={`text-xs sm:text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                Showing {filteredTransactions.length} of {transactions.length} transaction{transactions.length !== 1 ? 's' : ''}
+                Showing {totalItems === 0 ? 0 : (serverMode ? ((meta?.currentPage && transactions?.length) ? (meta.currentPage - 1) * pageSize + 1 : startIdx + 1) : startIdx + 1)}-
+                {serverMode ? endIdx : endIdx} of {totalItems} item{totalItems !== 1 ? 's' : ''}
                 {isFiltered && <span className="ml-1">(filtered)</span>}
               </p>
 
@@ -393,9 +441,9 @@ const TransactionList = () => {
                 ) : (
                   /* Transaction List */
                   <div className="space-y-4 sm:space-y-2">
-                    {filteredTransactions?.map((transaction: any, index: number) => (
+                    {paginatedTransactions?.map((transaction: any, index: number) => (
                       <AllTransactions
-                        key={transaction.ptid || `transaction-${index}`}
+                        key={transaction.ptid || `transaction-${startIdx + index}`}
                         onTap={() => showTransactionDetails(transaction)}
                         transactionType={transaction.Mode || ''}
                         accountType={transaction.TranCode || ''}
@@ -416,6 +464,58 @@ const TransactionList = () => {
               </>
             )}
           </>
+        )}
+
+        {/* Pagination Controls */}
+        {hasFilteredTransactions && (
+          <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(1)}
+                disabled={safeCurrentPage === 1}
+                className={`${isDarkMode ? 'bg-gray-800 text-gray-200 disabled:bg-gray-800/50 disabled:text-gray-500' : 'bg-gray-100 text-gray-700 disabled:bg-gray-100 disabled:text-gray-400'} px-3 py-1.5 rounded`}
+              >
+                First
+              </button>
+              <button
+                onClick={() => setCurrentPage(Math.max(1, safeCurrentPage - 1))}
+                disabled={safeCurrentPage === 1}
+                className={`${isDarkMode ? 'bg-gray-800 text-gray-200 disabled:bg-gray-800/50 disabled:text-gray-500' : 'bg-gray-100 text-gray-700 disabled:bg-gray-100 disabled:text-gray-400'} px-3 py-1.5 rounded`}
+              >
+                Prev
+              </button>
+              <span className={`${isDarkMode ? 'text-gray-300' : 'text-gray-700'} text-sm`}>
+                Page {serverMode ? (meta?.currentPage || safeCurrentPage) : safeCurrentPage} of {totalPages}
+              </span>
+              <button
+                onClick={() => setCurrentPage(Math.min(totalPages, safeCurrentPage + 1))}
+                disabled={safeCurrentPage === totalPages}
+                className={`${isDarkMode ? 'bg-gray-800 text-gray-200 disabled:bg-gray-800/50 disabled:text-gray-500' : 'bg-gray-100 text-gray-700 disabled:bg-gray-100 disabled:text-gray-400'} px-3 py-1.5 rounded`}
+              >
+                Next
+              </button>
+              <button
+                onClick={() => setCurrentPage(totalPages)}
+                disabled={safeCurrentPage === totalPages}
+                className={`${isDarkMode ? 'bg-gray-800 text-gray-200 disabled:bg-gray-800/50 disabled:text-gray-500' : 'bg-gray-100 text-gray-700 disabled:bg-gray-100 disabled:text-gray-400'} px-3 py-1.5 rounded`}
+              >
+                Last
+              </button>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className={`${isDarkMode ? 'text-gray-300' : 'text-gray-700'} text-sm`}>Per page</span>
+              <select
+                value={pageSize}
+                onChange={(e) => { setPageSize(parseInt(e.target.value)); setCurrentPage(1); }}
+                className={`px-3 py-1.5 rounded border text-sm ${isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+            </div>
+          </div>
         )}
 
         <Footer />

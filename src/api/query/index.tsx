@@ -36,6 +36,8 @@ export const useFetchStatements = (params?: {
   start?: string;
   end?: string;
   account_number?: string;
+  size?: number;
+  page?: number;
 }) => {
   return useQuery({
     queryFn: () => fetchStatements(params),

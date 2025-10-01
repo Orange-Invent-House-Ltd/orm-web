@@ -31,6 +31,8 @@ export const fetchStatements = async (params: {
   start?: string;
   end?: string;
   account_number?: string;
+  size?: number;
+  page?: number;
 } = {}) => {
   const res = await privateApi.get("/integrations/zenith-accounts-statement", {
     params: params
