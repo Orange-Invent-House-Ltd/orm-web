@@ -80,9 +80,12 @@ const TransactionList = () => {
     setFilteredTransactions(filtered);
     setTotalCredit(creditTotal);
     setTotalDebit(debitTotal);
-    // Reset to first page when filters/search/source data change
-    setCurrentPage(1);
   }, [transactions, searchQuery, transactionType]);
+
+  // Reset to first page when filters/search/account source change (not when transactions update from page fetch)
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, transactionType, currentAccountNumber]);
 
   // If an account is selected, use server-side pagination; else fallback to client-side
   const serverMode = !!currentAccountNumber;
