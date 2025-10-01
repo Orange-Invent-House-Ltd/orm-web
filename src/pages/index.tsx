@@ -9,6 +9,7 @@ import { SearchModal } from '../components/home/search_modal';
 import LoadingOverlay from '../components/reuseable/loading-overlay';
 import Footer from '../components/reuseable/footer';
 import { NavigationBar } from '../components/reuseable/buttom_nav';
+import logo from '../assets/logo.png';
 // import { useNavigate } from 'react-router-dom';
 import {
   useFetchAggregatedBalance,
@@ -239,9 +240,7 @@ const HomeScreen = () => {
               Monitor your financial metrics
             </p>
           </div>
-          <div className="bg-gradient-to-r from-green-500 to-emerald-500 px-4 sm:px-6 py-2 sm:py-3 rounded-full shadow-lg flex-shrink-0 self-start sm:self-center">
-            <span className="text-white font-bold text-sm sm:text-lg lg:text-xl tracking-wider">KSRM</span>
-          </div>
+          <img src={logo} alt="logo" className="w-20 h-20" />
         </div>
 
         {/* Currency Cards */}

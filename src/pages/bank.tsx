@@ -45,14 +45,14 @@ const BankScreen = ({ bankName: propBankName }: { bankName?: string }) => {
   const { isDarkMode, toggleTheme } = useTheme();
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [isBalanceVisible, setIsBalanceVisible] = useState(true);
-  
+
   // Get data from Zustand store
   const selectedBankEntry = useSelectedBankEntry();
   const { getBankByName } = useBankStore();
-  
+
   // Determine which bank data to use
   const [currentBankData, setCurrentBankData] = useState<any>(null);
-  
+
   useEffect(() => {
     // Priority order: selectedBankEntry from store > getBankByName > fallback to mock data
     if (selectedBankEntry) {
@@ -96,27 +96,27 @@ const BankScreen = ({ bankName: propBankName }: { bankName?: string }) => {
             transactions: generateMockTransactions(account.account_number, account.balance, account.currency)
           }))
         });
-      } 
-    } 
+      }
+    }
   }, [selectedBankEntry, propBankName, getBankByName]);
-  
+
   // Generate mock transactions for demonstration
   const generateMockTransactions = (accountNumber: string, balance: string, currency: string): Transaction[] => {
     const mockTransactions: Transaction[] = [];
     const currentBalance = parseFloat(balance) || 0;
     let runningBalance = currentBalance;
-    
+
     // Generate 10 mock transactions
     for (let i = 0; i < 10; i++) {
       const isCredit = Math.random() > 0.3; // 70% chance of credit
       const amount = Math.floor(Math.random() * 1000000) + 10000; // Random amount between 10k and 1M
       const transactionDate = new Date();
       transactionDate.setDate(transactionDate.getDate() - i);
-      
+
       if (isCredit) {
         runningBalance -= amount;
       }
-      
+
       mockTransactions.push({
         accountNumber,
         accountType: 'Government Account',
@@ -135,10 +135,10 @@ const BankScreen = ({ bankName: propBankName }: { bankName?: string }) => {
         runningBalance
       });
     }
-    
+
     return mockTransactions.reverse(); // Show newest first
   };
-  
+
   const toggleBalanceVisibility = () => {
     setIsBalanceVisible(!isBalanceVisible);
   };
@@ -173,7 +173,7 @@ const BankScreen = ({ bankName: propBankName }: { bankName?: string }) => {
           totalOutflow: 0.0,
         };
       }
-      
+
       balances[currency].totalInflow += amount;
     }
 
@@ -183,9 +183,8 @@ const BankScreen = ({ bankName: propBankName }: { bankName?: string }) => {
   // Show loading state if no data is available yet
   if (!currentBankData) {
     return (
-      <div className={`min-h-screen flex items-center justify-center transition-all duration-300 ${
-        isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
-      }`}>
+      <div className={`min-h-screen flex items-center justify-center transition-all duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
+        }`}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-emerald-500 mx-auto mb-4"></div>
           <p className={`text-lg ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -203,7 +202,7 @@ const BankScreen = ({ bankName: propBankName }: { bankName?: string }) => {
   // Bank Logo Component with fallback and enhanced styling
   // const BankLogoDisplay = ({ size = "w-20 h-20" }: { size?: string }) => {
   //   const [imageError, setImageError] = useState(false);
-    
+
   //   if (currentBankData.bankLogo && !imageError) {
   //     return (
   //       <img 
@@ -214,7 +213,7 @@ const BankScreen = ({ bankName: propBankName }: { bankName?: string }) => {
   //       />
   //     );
   //   }
-    
+
   //   // Generate icon based on bank name
   //   const getBankIcon = (bankName: string) => {
   //     const name = bankName.toLowerCase();
@@ -224,7 +223,7 @@ const BankScreen = ({ bankName: propBankName }: { bankName?: string }) => {
   //     if (name.includes('fund') || name.includes('insurance')) return '🛡️';
   //     return '🏦';
   //   };
-    
+
   //   // Fallback to icon if no logo or image failed to load
   //   return (
   //     <div className={`${size} bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center`}>
@@ -236,42 +235,37 @@ const BankScreen = ({ bankName: propBankName }: { bankName?: string }) => {
   // };
 
   return (
-    <div className={`min-h-screen transition-all duration-300 sm:p-6 p-2 ${
-      isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
-    }`}>
-      {/* Header */}
-      <header className={`shadow-sm border-b transition-all duration-300 ${
-        isDarkMode 
-          ? 'bg-gray-800 border-gray-700' 
-          : 'bg-white border-gray-200'
+    <div className={`min-h-screen transition-all duration-300 sm:p-6 p-2 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
       }`}>
+      {/* Header */}
+      <header className={`shadow-sm border-b transition-all duration-300 ${isDarkMode
+          ? 'bg-gray-800 border-gray-700'
+          : 'bg-white border-gray-200'
+        }`}>
         <div className="mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => window.history.back()}
-                className={`p-2 rounded-lg transition-colors ${
-                  isDarkMode 
-                    ? 'hover:bg-gray-700 text-gray-400' 
+                className={`p-2 rounded-lg transition-colors ${isDarkMode
+                    ? 'hover:bg-gray-700 text-gray-400'
                     : 'hover:bg-gray-100 text-gray-600'
-                }`}
+                  }`}
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
-              <h1 className={`text-md font-semibold ${
-                isDarkMode ? 'text-white' : 'text-gray-900'
-              }`}>
+              <h1 className={`text-md font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'
+                }`}>
                 Kaduna State Revenue Monitoring
               </h1>
             </div>
-            
+
             <button
               onClick={toggleTheme}
-              className={`p-2 rounded-lg transition-colors ${
-                isDarkMode 
-                  ? 'hover:bg-gray-700 text-yellow-500' 
+              className={`p-2 rounded-lg transition-colors ${isDarkMode
+                  ? 'hover:bg-gray-700 text-yellow-500'
                   : 'hover:bg-gray-100 text-gray-600'
-              }`}
+                }`}
             >
               {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
@@ -284,9 +278,8 @@ const BankScreen = ({ bankName: propBankName }: { bankName?: string }) => {
         {/* Bank Overview Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className={`text-2xl sm:text-3xl font-bold mb-2 mt-7 ${
-              isDarkMode ? 'text-white' : 'text-gray-900'
-            }`}>
+            <h2 className={`text-2xl sm:text-3xl font-bold mb-2 mt-7 ${isDarkMode ? 'text-white' : 'text-gray-900'
+              }`}>
               {currentBankData.bankName}
             </h2>
             <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
@@ -315,21 +308,18 @@ const BankScreen = ({ bankName: propBankName }: { bankName?: string }) => {
 
         {/* Bank Accounts Section */}
         <div className="mb-8">
-          <h3 className={`text-xl font-semibold mb-6 text-left ${
-            isDarkMode ? 'text-white' : 'text-gray-900'
-          }`}>
+          <h3 className={`text-xl font-semibold mb-6 text-left ${isDarkMode ? 'text-white' : 'text-gray-900'
+            }`}>
             Individual Accounts
           </h3>
 
           {currentBankData.syncAccounts.length === 0 ? (
             <div className="h-80 flex items-center justify-center">
               <div className="text-center">
-                <Inbox className={`w-16 h-16 mx-auto mb-4 ${
-                  isDarkMode ? 'text-gray-600' : 'text-gray-400'
-                }`} />
-                <p className={`text-lg ${
-                  isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                }`}>
+                <Inbox className={`w-16 h-16 mx-auto mb-4 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'
+                  }`} />
+                <p className={`text-lg ${isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                  }`}>
                   No accounts found for {currentBankData.bankName}
                 </p>
               </div>
@@ -364,12 +354,11 @@ const BankScreen = ({ bankName: propBankName }: { bankName?: string }) => {
 
         {/* Charts Section */}
         <div className="mb-8">
-          <h3 className={`text-xl font-semibold mb-6 text-left ${
-            isDarkMode ? 'text-white' : 'text-gray-900'
-          }`}>
+          <h3 className={`text-xl font-semibold mb-6 text-left ${isDarkMode ? 'text-white' : 'text-gray-900'
+            }`}>
             Transaction Overview
           </h3>
-          
+
           <div className="h-96">
             <RevenueBarChart
               inflows={mockInflows}
