@@ -1,40 +1,49 @@
 import axios from "axios";
+import { toast } from "react-toastify";
 
 // const API_KEY = import.meta.env.VITE_API_KEY;
 const BASE_URL = import.meta.env.VITE_BASE_URL;
-const BASE_URL_TWO = import.meta.env.VITE_BASE_URL_TWO;
 
 export const publicApi = axios.create({
-    baseURL: BASE_URL,
+  baseURL: BASE_URL,
 });
 
 export const privateApi = axios.create({
-    baseURL: BASE_URL_TWO,
+  baseURL: BASE_URL,
 });
 
 privateApi.interceptors.request.use(
-    (config) => {
-        const sessionToken = sessionStorage.getItem("user_id");
+  (config) => {
+    const sessionToken = localStorage.getItem("token");
+    if (!sessionToken) {
+      return config;
+    }
+    if (sessionToken) {
+      if (config.headers) {
+        config.headers.Authorization = `Bearer ${sessionToken}`;
+      }
+    }
 
-        // Add API key only if user_id is available
-        if (sessionToken) {
-        //   config.headers["X-API-Key"] = API_KEY;
-        }
-
-        return config;
-    },
-    (error) => Promise.reject(error)
+    return config;
+  },
+  (error) => Promise.reject(error)
 );
 
 privateApi.interceptors.response.use(
-    (response) => {
-        return response;
-    },
-    async (error) => {
-        if (error.response?.status === 401) {
-            sessionStorage.removeItem("user_id");
-            if (window.location) window.location.href = "/login";
-        }
-        return Promise.reject(error);
+  (response) => {
+    return response;
+  },
+  async (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("token");
+      toast.info("Session timeout", {
+        toastId: "info1",
+      });
+      window.location.replace("/login");
+      // Handle error refreshing refresh token
+      // Log the user out and redirect to login page
+      // Example:
     }
+    return Promise.reject(error);
+  }
 );
