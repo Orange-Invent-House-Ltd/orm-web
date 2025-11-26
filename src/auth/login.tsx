@@ -27,7 +27,6 @@ const ProfessionalLogin = () => {
 
   const onSubmit = async (data: any) => {
     login(data);
-    console.log("Login data:", data);
   };
 
   // Validation rules

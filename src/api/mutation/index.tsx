@@ -11,20 +11,9 @@ export const useLogin = () => {
     mutationFn: login,
     onSuccess: (data: any) => {
       // Set auth token and show success message
-
-      if (
-        (data?.data?.user?.id === 93 &&
-          data?.data?.user?.name === "MYBALANCE APP") ||
-        (data?.data?.user?.name === "MYBALANCEAPP" &&
-          data?.data?.user?.id === 410)
-      ) {
-        sessionStorage.setItem("token", data.data.token);
-        toast.success(data.message);
-        navigate("/");
-      } else {
-          toast.error('Invalid credentials');
-        navigate("/login");
-      }
+      sessionStorage.setItem("token", data.data.token);
+      toast.success(data.message);
+      navigate("/");
     },
     onError: (error: any) => {
       const resMessage =

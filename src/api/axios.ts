@@ -14,7 +14,7 @@ export const privateApi = axios.create({
 
 privateApi.interceptors.request.use(
   (config) => {
-    const sessionToken = localStorage.getItem("token");
+    const sessionToken = sessionStorage.getItem("token");
     if (!sessionToken) {
       return config;
     }
@@ -35,11 +35,11 @@ privateApi.interceptors.response.use(
   },
   async (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem("token");
+      sessionStorage.removeItem("token");
       toast.info("Session timeout", {
         toastId: "info1",
       });
-      window.location.replace("/login");
+      // window.location.replace("/login");
       // Handle error refreshing refresh token
       // Log the user out and redirect to login page
       // Example:
