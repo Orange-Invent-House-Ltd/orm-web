@@ -11,6 +11,8 @@ import { useFinanceStore } from '@/store/financeStore'
 
 export default function BankPage() {
   
+
+  
   const bank = {
     id: 'zenith',
     name: 'Zenith Bank',
