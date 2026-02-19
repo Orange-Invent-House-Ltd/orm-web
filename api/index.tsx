@@ -7,11 +7,6 @@ export const login = async (data: any) => {
   return res.data;
 };
 
-export const fetchBanks = async (data: any) => {
-  const res = await privateApi.post("/integrations/zenith/account-balance", data);
-  return res.data;
-};
-
 // fetchAggregatedBalance
 export const fetchAggregatedBalance = async () => {
   const res = await privateApi.get("/integrations/zenith/aggregated-balance");
