@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
  import logo from '../assets/logo.png'
 import Image from 'next/image'
+import { useFinanceStore } from '@/store/financeStore'
 
 const navItem = {
   hidden: { opacity: 0, x: -12 },
@@ -40,24 +41,19 @@ const bankRoute = [
     initial: 'UB',
   },
   {
-    route: '/banks/firstbank',
-    name: 'First Bank',
+    route: '/banks/ptb',
+    name: 'Premium Trust Bank',
        icon: Landmark,
 
     color: '#1e7b4b', // Medium green
-    initial: 'FB',
+    initial: 'PTB',
   },
-  {
-    route: '/banks/gtbank',
-    name: 'GTBank',
-       icon: Landmark,
-
-    color: '#2e8b57', // Sea green
-    initial: 'GT',
-  },
+ 
 ]
 
 export default function Sidebar() {
+    const { setActiveBank, setIsMobileOpen} = useFinanceStore()
+  
   const pathname = usePathname()
   const router = useRouter()
 
@@ -110,7 +106,7 @@ export default function Sidebar() {
         className="flex-1 overflow-y-auto px-3 pt-4 pb-2 space-y-1"
       >
         {/* Dashboard */}
-        <motion.div variants={navItem}>
+        {/* <motion.div variants={navItem}>
           <Link
             href="/dashboard"
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group relative"
@@ -129,7 +125,7 @@ export default function Sidebar() {
             <LayoutDashboard size={18} />
             <span className="text-sm font-semibold">Dashboard</span>
           </Link>
-        </motion.div>
+        </motion.div> */}
 
         {/* Banks section */}
         <motion.div variants={navItem} className="pt-3 pb-1">
@@ -152,6 +148,11 @@ export default function Sidebar() {
                   style={{
                     backgroundColor: active ? 'rgba(255,255,255,0.06)' : 'transparent',
                     color: active ? '#fff' : 'rgba(255,255,255,0.5)',
+                  }}
+                  onClick={() => {
+                    setIsMobileOpen(false)
+                    setActiveBank('')
+                    localStorage.removeItem('bankName')
                   }}
                 >
                   {active && (
@@ -203,6 +204,8 @@ export default function Sidebar() {
               backgroundColor: isActive('/transactions') ? 'rgba(19,236,91,0.12)' : 'transparent',
               color: isActive('/transactions') ? '#13ec5b' : 'rgba(255,255,255,0.55)',
             }}
+                    
+            onClick={() =>  setIsMobileOpen(false) }
           >
             {isActive('/transactions') && (
               <motion.div
