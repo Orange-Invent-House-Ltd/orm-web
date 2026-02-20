@@ -5,7 +5,7 @@ import { gsap } from 'gsap'
 import { useEffect, useRef, useState } from 'react'
 import { RefreshCw, TrendingUp, XCircle } from 'lucide-react'
 import Link from 'next/link'
-import { useFetchPtbAggregatedBalance, useFetchUbaAggregatedBalance, useFetchZenithAggregatedBalance } from '@/api/query'
+import { useFetchPtbAggregatedBalance,   } from '@/api/query'
 import { useFinanceStore } from '@/store/financeStore'
 
 const CURRENCY_CONFIG = {
@@ -26,18 +26,18 @@ function formatBalance(amount: string | number, currency: string): string {
   })}`
 }
 
-export default function ZenithBankPage() {
+
+export default function PtbBankPage() {
   const { setActiveBank } = useFinanceStore()
   const [page, setPage] = useState(1)    
   const [size, setSize] = useState(6)
   const [search, setSearch] = useState('')
  const [searchInput, setSearchInput] = useState('')
 
-  const { data: zenith, isLoading, error, refetch } = useFetchZenithAggregatedBalance({page, size, search})
-  const { data: uba } = useFetchUbaAggregatedBalance({page, size, search})
-  const { data: ptb } = useFetchPtbAggregatedBalance({page, size, search})
+ 
+  const { data: ptb ,isLoading, error, refetch } = useFetchPtbAggregatedBalance({page, size, search})
 
-  const accounts = zenith?.data || []
+  const accounts = ptb?.data || []
   const statsRef = useRef<HTMLDivElement>(null)
 
   /* Aggregate totals per currency */
@@ -66,7 +66,7 @@ export default function ZenithBankPage() {
     gsap.fromTo(cards, { y: 24, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.09, duration: 0.55, ease: 'power2.out' })
   }, [accounts.length])
 
-  const bankName = accounts[0]?.bankName ?? 'Zenith Bank'
+  const bankName = accounts[0]?.bankName ?? 'Premium Trust Bank'
 
   return (
     <div className="md:p-8 p-3 min-h-screen" style={{ backgroundColor: '#0d1a11' }}>
@@ -77,21 +77,20 @@ export default function ZenithBankPage() {
           <span>Institutions</span><span>/</span>
           <span style={{ color: '#13ec5b' }}>{bankName}</span>
         </div>
-        <div className="flex flex md:flex-row flex-col md:items-center items-start justify-between">
+        <div className="flex md:flex-row flex-col md:items-center items-start justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center text-base font-black"
               style={{ backgroundColor: '#13ec5b22', color: '#13ec5b', border: '1px solid #13ec5b44' }}>
               {bankName.charAt(0)}
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white tracking-tight truncate
-    ">{bankName}</h1>
+              <h1 className="text-2xl font-bold text-white tracking-tight truncate">{bankName}</h1>
               <p className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>Manage Accounts</p>
             </div>
           </div>
-          <button className="sm:w-fit w-full  flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:opacity-80"
+          <button className="sm:w-fit w-full flex justify-center items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:opacity-80"
             style={{ backgroundColor: '#13ec5b15', color: '#13ec5b', border: '1px solid #13ec5b33' }}
-          onClick={()=> refetch()}>
+          onClick={()=> refetch()} >
             <RefreshCw size={15}   className="cursor-pointer" /> Refresh All
           </button>
         </div>
@@ -143,9 +142,9 @@ export default function ZenithBankPage() {
         </button>
           
         <motion.div className="flex items-center gap-2">
-          {zenith?.meta?.totalResults > accounts.length &&
+          {ptb?.meta?.totalResults > accounts.length &&
             <button className="text-sm font-bold text-white/70 hover:opacity-80 mr-6 underline"
-              onClick={() => setSize(zenith?.meta?.totalResults)}
+              onClick={() => setSize(ptb?.meta?.totalResults)}
             >See All</button>
           }
          {/* <input
@@ -198,7 +197,7 @@ export default function ZenithBankPage() {
             return (
               <Link key={acc.accountNumber ?? i} href="/transactions"
               onClick={()=> {
-                localStorage.setItem('bankName','zenith')
+                localStorage.setItem('bankName','ptb')
                 setActiveBank(acc.accountNumber)
               }}
               >
@@ -308,7 +307,7 @@ export default function ZenithBankPage() {
         </div>
       )}  
 
-      {zenith?.meta?.totalResults > accounts.length &&
+      {ptb?.meta?.totalResults > accounts.length &&
         <motion.button
           className="mt-4 w-fit flex items-center justify-center mx-auto p-6 bg-white/10 rounded-lg text-white font-bold text-sm"
           whileTap={{ scale: 0.98 }}

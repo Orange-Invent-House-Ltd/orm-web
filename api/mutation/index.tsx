@@ -13,7 +13,7 @@ export const useLogin = () => {
       // Set auth token and show success message
       sessionStorage.setItem("token", data.data.token);
       toast.success(data.message);
-      navigate.push("/");
+      navigate.push("/banks/zenith");
     },
     onError: (error: any) => {
       const resMessage =

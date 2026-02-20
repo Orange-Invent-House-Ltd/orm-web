@@ -2,7 +2,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 
 // const API_KEY = import.meta.env.VITE_API_KEY;
-const BASE_URL = import.meta.env.VITE_BASE_URL;
+const BASE_URL =process.env.NEXT_PUBLIC_BASE_URL;
 
 export const publicApi = axios.create({
   baseURL: BASE_URL,
@@ -39,7 +39,7 @@ privateApi.interceptors.response.use(
       toast.info("Session timeout", {
         toastId: "info1",
       });
-      // window.location.replace("/login");
+      window.location.replace("/login");
       // Handle error refreshing refresh token
       // Log the user out and redirect to login page
       // Example:

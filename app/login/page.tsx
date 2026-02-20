@@ -8,11 +8,12 @@ import { Eye, EyeOff, Lock, User, ArrowRight, Shield } from 'lucide-react'
 import { gsap } from 'gsap'
 import logo from '../../assets/logo.png'
 import Image from 'next/image'
+import { useLogin } from '@/api/mutation'
 
 interface LoginForm {
-  username: string
+  email: string
   password: string
-  remember: boolean
+  // remember: boolean
 }
 
 export default function LoginPage() {
@@ -20,8 +21,9 @@ export default function LoginPage() {
   const router = useRouter()
   const glowRef = useRef<HTMLDivElement>(null)
   const cardRef = useRef<HTMLDivElement>(null)
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginForm>()
-
+  const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>()
+const {mutate: login, isPending} = useLogin()
+  
   useEffect(() => {
     if (!glowRef.current) return
     gsap.to(glowRef.current, {
@@ -34,12 +36,11 @@ export default function LoginPage() {
     })
   }, [])
 
-  const onSubmit = async () => {
+  const onSubmit = async (data: LoginForm) => {
     if (cardRef.current) {
       gsap.to(cardRef.current, { scale: 0.98, duration: 0.1, yoyo: true, repeat: 1 })
     }
-    await new Promise((r) => setTimeout(r, 900))
-    router.push('/dashboard')
+    login(data )
   }
 
   return (
@@ -120,26 +121,26 @@ export default function LoginPage() {
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-            {/* Username */}
+            {/* Email */}
             <motion.div initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 }}>
               <label className="block text-xs font-semibold uppercase tracking-wider mb-2 ml-1" style={{ color: 'rgba(255,255,255,0.7)' }}>
-                Username
+                Email
               </label>
               <div className="relative">
                 <User size={15} className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: 'rgba(255,255,255,0.3)' }} />
                 <input
-                  {...register('username', { required: true })}
+                  {...register('email', { required: true })}
                   placeholder="Enter your ID"
                   className="w-full rounded-lg py-3.5 pl-11 pr-4 text-white text-sm placeholder:text-white/20 focus:outline-none transition-all"
                   style={{
                     backgroundColor: 'rgba(16,34,22,0.5)',
-                    border: errors.username ? '1px solid #ef4444' : '1px solid rgba(255,255,255,0.1)',
+                    border: errors.email ? '1px solid #ef4444' : '1px solid rgba(255,255,255,0.1)',
                   }}
                   onFocus={(e) => (e.target.style.borderColor = '#13ec5b')}
-                  onBlur={(e) => (e.target.style.borderColor = errors.username ? '#ef4444' : 'rgba(255,255,255,0.1)')}
+                  onBlur={(e) => (e.target.style.borderColor = errors.email ? '#ef4444' : 'rgba(255,255,255,0.1)')}
                 />
               </div>
-              {errors.username && <p className="text-red-400 text-xs mt-1 ml-1">Username is required</p>}
+              {errors.email && <p className="text-red-400 text-xs mt-1 ml-1">Email is required</p>}
             </motion.div>
 
             {/* Password */}
@@ -179,7 +180,7 @@ export default function LoginPage() {
             </motion.div>
 
             {/* Remember */}
-            <motion.div
+            {/* <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.38 }}
@@ -195,18 +196,18 @@ export default function LoginPage() {
               <label htmlFor="remember" className="text-sm cursor-pointer select-none" style={{ color: 'rgba(255,255,255,0.5)' }}>
                 Remember this workstation for 24 hours
               </label>
-            </motion.div>
+            </motion.div> */}
 
             {/* Submit button */}
             <motion.button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isPending}
               className="w-full font-bold py-4 rounded-lg flex items-center justify-center gap-2 mt-2 transition-all"
               style={{
                 backgroundColor: '#13ec5b',
                 color: '#102216',
                 boxShadow: '0 4px 20px rgba(19,236,91,0.28)',
-                opacity: isSubmitting ? 0.7 : 1,
+                opacity: isPending ? 0.7 : 1,
               }}
               whileHover={{ scale: 1.01, boxShadow: '0 4px 32px rgba(19,236,91,0.45)' }}
               whileTap={{ scale: 0.98 }}
@@ -215,7 +216,7 @@ export default function LoginPage() {
               transition={{ delay: 0.44 }}
             >
               <AnimatePresence mode="wait">
-                {isSubmitting ? (
+                {isPending ? (
                   <motion.span key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                     Authenticating...
                   </motion.span>
