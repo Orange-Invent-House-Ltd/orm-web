@@ -1,4 +1,4 @@
-// File: C:\Users\iboro\Desktop\finance-app\app\(dashboard)\banks\zenith\page.tsx
+// File: C:\Users\iboro\Desktop\orem-web.v2\app\(dashboard)\banks\zenith\page.tsx
 import * as entry from '../../../../../../app/(dashboard)/banks/zenith/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

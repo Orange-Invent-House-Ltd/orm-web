@@ -1,7 +1,6 @@
 {
   "/login/page": "app/login/page.js",
-  "/otp/page": "app/otp/page.js",
-  "/(dashboard)/profile/page": "app/(dashboard)/profile/page.js",
-  "/(dashboard)/profile/change-password/page": "app/(dashboard)/profile/change-password/page.js",
-  "/(dashboard)/dashboard/page": "app/(dashboard)/dashboard/page.js"
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/(dashboard)/banks/zenith/page": "app/(dashboard)/banks/zenith/page.js",
+  "/(dashboard)/transactions/page": "app/(dashboard)/transactions/page.js"
 }
