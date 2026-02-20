@@ -89,7 +89,7 @@ export default function ZenithBankPage() {
               <p className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>Manage Accounts</p>
             </div>
           </div>
-          <button className="sm:w-fit w-full  flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:opacity-80"
+          <button className="sm:w-fit w-full  flex items-center justify-center mt-2 gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:opacity-80"
             style={{ backgroundColor: '#13ec5b15', color: '#13ec5b', border: '1px solid #13ec5b33' }}
           onClick={()=> refetch()}>
             <RefreshCw size={15}   className="cursor-pointer" /> Refresh All
@@ -310,7 +310,7 @@ export default function ZenithBankPage() {
 
       {zenith?.meta?.totalResults > accounts.length &&
         <motion.button
-          className="mt-4 w-fit flex items-center justify-center mx-auto p-6 bg-white/10 rounded-lg text-white font-bold text-sm"
+          className="mt-4 w-fit flex items-center justify-center mx-auto p-4 mb-16 bg-white/10 rounded-lg text-white font-bold text-sm"
           whileTap={{ scale: 0.98 }}
           onClick={() => setSize(prev => prev + 6)}
           whileHover={{ scale: 1.02, boxShadow: `0 0 30px #13ec5b` }}

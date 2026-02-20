@@ -20,19 +20,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
        
       </div>
-      <AnimatePresence mode="wait">
-        <motion.main
-          key={pathname}
-          initial={{ opacity: 0, x: 18 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -18 }}
-          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-          className="overflow-y-auto md:ml-72"
-          style={{ backgroundColor: '#0d1a11' }}
+      <main className='md:ml-72'
         >
           {children}
-        </motion.main>
-      </AnimatePresence>
+        </main>
+      
     </div>
   )
 }

@@ -332,7 +332,7 @@ export default function TransactionsPage() {
             className="rounded-2xl overflow-hidden"
             style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
           >
-            <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
+            <div className="overflow-x-scroll -webkit-overflow-scrolling-touch">
               <table className="w-full text-left" style={{ minWidth: '720px' }}>
                 <thead>
                   <tr
