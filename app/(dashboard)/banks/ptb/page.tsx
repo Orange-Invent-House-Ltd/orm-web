@@ -69,7 +69,7 @@ export default function PtbBankPage() {
   const bankName = accounts[0]?.bankName ?? 'Premium Trust Bank'
 
   return (
-    <div className="md:p-8 p-3 min-h-screen" style={{ backgroundColor: '#0d1a11' }}>
+    <div className="md:p-8 p-3 " style={{ backgroundColor: '#0d1a11' }}>
 
       {/* Breadcrumb + title */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="mb-8">

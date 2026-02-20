@@ -69,7 +69,7 @@ export default function ZenithBankPage() {
   const bankName = accounts[0]?.bankName ?? 'Zenith Bank'
 
   return (
-    <div className="md:p-8 p-3 min-h-screen" style={{ backgroundColor: '#0d1a11' }}>
+    <div className="md:p-8 p-3 " style={{ backgroundColor: '#0d1a11' }}>
 
       {/* Breadcrumb + title */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="mb-8">
@@ -77,7 +77,7 @@ export default function ZenithBankPage() {
           <span>Institutions</span><span>/</span>
           <span style={{ color: '#13ec5b' }}>{bankName}</span>
         </div>
-        <div className="flex flex md:flex-row flex-col md:items-center items-start justify-between">
+        <div className="flex  md:flex-row flex-col md:items-center items-start justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center text-base font-black"
               style={{ backgroundColor: '#13ec5b22', color: '#13ec5b', border: '1px solid #13ec5b44' }}>

@@ -1,50 +1,41 @@
-import { Menu, X } from 'lucide-react';
-import React from 'react';
-import Sidebar from './Sidebar';
-import { AnimatePresence, motion } from 'framer-motion';
-import { useFinanceStore } from '@/store/financeStore';
+'use client'
+
+import { Menu, X } from 'lucide-react'
+import React from 'react'
+import Sidebar from './Sidebar'
+import { useFinanceStore } from '@/store/financeStore'
 
 function MobileSidebar() {
-    const { isMobileOpen, setIsMobileOpen } = useFinanceStore();
+  const { isMobileOpen, setIsMobileOpen } = useFinanceStore()
 
-    return (
+  return (
+    <>
+      {/* Toggle button */}
+      <button
+        className="fixed top-1 right-4 z-[300] p-2 rounded-md text-white cursor-pointer"
+        onClick={() => setIsMobileOpen(!isMobileOpen)}
+        aria-label="Toggle sidebar"
+      >
+        {isMobileOpen ? <X /> : <Menu />}
+      </button>
+
+     
+      {isMobileOpen && (
         <>
-            <button
-                className="fixed top-1 right-4 z-50 p-2 rounded-md text-white cursor-pointer"
-                onClick={() => setIsMobileOpen(!isMobileOpen)} 
-                aria-label="Open sidebar"
-            >
-                {isMobileOpen ? <X /> : <Menu />} 
-            </button>
+          {/* Backdrop — unmounts instantly on close */}
+          <div
+            className="fixed inset-0 bg-black/50 z-40"
+            onClick={() => setIsMobileOpen(false)}
+          />
 
-            <AnimatePresence>
-                {isMobileOpen && (
-                    <>
-                        <motion.div
-                            className="fixed inset-0 bg-black/50 z-40"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setIsMobileOpen(false)}
-                        />
-                        <motion.div
-                            className="fixed top-0 right-0 h-full z-50"
-                            initial={{ x: '100%' }}
-                            animate={{ x: 0 }}
-                            exit={{ x: '100%' }}
-                            transition={{
-                                type: 'spring',
-                                stiffness: 300,
-                                damping: 30,
-                            }}
-                        >
-                            <Sidebar />
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
+          {/* Sidebar panel */}
+          <div className="fixed top-0 right-0 h-full z-50">
+            <Sidebar />
+          </div>
         </>
-    );
+      )}
+    </>
+  )
 }
 
-export default MobileSidebar;
+export default MobileSidebar
