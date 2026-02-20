@@ -69,10 +69,13 @@ const CSV_HEADERS = [
 export default function TransactionsPage() {
   const { setSelectedTransaction, activeBank, setActiveBank } = useFinanceStore()
 
-  const [apiSearch,  setApiSearch]  = useState(activeBank ?? '')
-  const [inputValue, setInputValue] = useState(activeBank ?? '')
+  const [apiSearch,  setApiSearch]  = useState('')
+  const [inputValue, setInputValue] = useState('')
+  const [accountNumber, setAccountNumber] = useState(activeBank ?? '')
+  const [accountNumberInput, setAccountNumberInput] = useState(activeBank ?? '')
   const [modeFilter, setModeFilter] = useState<'all' | 'CREDIT' | 'DEBIT'>('all')
   const [page,       setPage]       = useState(1)
+  const [sortOrder,  setSortOrder]  = useState<'desc' | 'asc'>('desc')
   const [showModal,  setShowModal]  = useState(!activeBank)
   const [bankName,   setBankName]   = useState('')
 
@@ -83,16 +86,27 @@ export default function TransactionsPage() {
     }
   }, [])
 
+  const modeParam = modeFilter === 'CREDIT' ? 'C' : modeFilter === 'DEBIT' ? 'D' : undefined
+
+  const getOrderingParam = () => {
+    const prefix = sortOrder === 'desc' ? '-' : ''
+    if (bankName === 'zenith') return `${prefix}TransDate`
+    if (bankName === 'uba') return `${prefix}tran_date`
+    if (bankName === 'ptb') return `${prefix}date`
+    return undefined
+  }
+  const orderingParam = getOrderingParam()
+
   const { data: zenithData, isLoading: zenithLoading } = useFetchZenithStatements(
-    { size: 100, page, search: apiSearch },
+    { size: 100, page, search: apiSearch , mode: modeParam, ordering: orderingParam, account_number: accountNumber},
     { enabled: bankName === 'zenith' }
   )
   const { data: ubaData, isLoading: ubaLoading } = useFetchUbaStatements(
-    { size: 100, page, search: apiSearch },
+    { size: 100, page, search: apiSearch, mode: modeParam, ordering: orderingParam, account_number: accountNumber },
     { enabled: bankName === 'uba' }
   )
   const { data: ptbData, isLoading: ptbLoading } = useFetchPtbStatements(
-    { size: 100, page, search: apiSearch },
+    { size: 100, page, search: apiSearch, mode: modeParam, ordering: orderingParam, account_number: accountNumber },
     { enabled: bankName === 'ptb' }
   )
 
@@ -124,6 +138,7 @@ export default function TransactionsPage() {
   // ── handlers ──────────────────────────────────────────────────────────────
   const handleSearch = () => {
     setApiSearch(inputValue.trim())
+    setAccountNumber(accountNumberInput.trim())
     setActiveBank('')
     setPage(1)
   }
@@ -134,7 +149,7 @@ export default function TransactionsPage() {
     if (mode === 'all') {
       setApiSearch(''); setInputValue(''); setActiveBank('')
     } else {
-      setApiSearch(mode); setInputValue(''); setActiveBank('')
+      setInputValue(''); setActiveBank('')
     }
   }
 
@@ -274,7 +289,18 @@ export default function TransactionsPage() {
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                  placeholder="Search by name, description, PTID…"
+                  placeholder="Search narration..."
+                  className="w-full text-sm text-white placeholder:text-white/20 rounded-xl pl-9 pr-4 py-2 focus:outline-none transition-all"
+                  style={{ backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+                />
+              </div>
+              <div className="relative flex-1">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'rgba(255,255,255,0.35)' }} />
+                <input
+                  value={accountNumberInput}
+                  onChange={(e) => setAccountNumberInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                  placeholder="Account Number"
                   className="w-full text-sm text-white placeholder:text-white/20 rounded-xl pl-9 pr-4 py-2 focus:outline-none transition-all"
                   style={{ backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
                 />
@@ -311,6 +337,18 @@ export default function TransactionsPage() {
                     </button>
                   )
                 })}
+                <button
+                  onClick={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
+                  className="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1"
+                  style={{
+                    backgroundColor: 'rgba(255,255,255,0.05)',
+                    color: 'rgba(255,255,255,0.5)',
+                    border: '1px solid rgba(255,255,255,0.06)',
+                  }}
+                >
+                  {sortOrder === 'desc' ? <TrendingDown size={14} /> : <TrendingUp size={14} />}
+                  {sortOrder === 'desc' ? 'Oldest' : 'Newest'}
+                </button>
               </div>
 
               <span className="text-sm ml-3 sm:ml-0" style={{ color: 'rgba(255,255,255,0.4)' }}>

@@ -2,12 +2,14 @@ import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 import { fetchPtbAggregatedBalance, fetchPtbStatements, fetchUbaAggregatedBalance, fetchUbaStatements, fetchZenithAggregatedBalance, fetchZenithStatements, } from "..";
 
 type StatementParams = {
-  search?: string
-  start?: string
-  end?: string
-  account_number?: string
-  size?: number
-  page?: number
+   search?: string;
+    start?: string;
+    end?: string;
+    account_number?: string;
+    mode?: string;
+    ordering?: string;
+    size?: number;
+    page?: number;
 }
 // 
 type ExtraOptions = Omit<UseQueryOptions, 'queryKey' | 'queryFn'>

@@ -9,10 +9,12 @@ export const login = async (data: any) => {
 
 // fetchZenithAggregatedBalance
 export const fetchZenithAggregatedBalance = async (params: {
-    search?: string;
+     search?: string;
     start?: string;
     end?: string;
     account_number?: string;
+    mode?: string;
+    ordering?: string;
     size?: number;
     page?: number;
   } = {}) => {
@@ -27,6 +29,8 @@ export const fetchZenithAggregatedBalance = async (params: {
     start?: string;
     end?: string;
     account_number?: string;
+    mode?: string;
+    ordering?: string;
     size?: number;
     page?: number;
   } = {}) => {
@@ -38,10 +42,12 @@ export const fetchZenithAggregatedBalance = async (params: {
   
 // fetchUbaAggregatedBalance
 export const fetchUbaAggregatedBalance = async (params: {
-    search?: string;
+     search?: string;
     start?: string;
     end?: string;
     account_number?: string;
+    mode?: string;
+    ordering?: string;
     size?: number;
     page?: number;
   } = {}) => {
@@ -50,10 +56,12 @@ export const fetchUbaAggregatedBalance = async (params: {
 }
 
   export const fetchUbaStatements = async (params: {
-    search?: string;
+     search?: string;
     start?: string;
     end?: string;
     account_number?: string;
+    mode?: string;
+    ordering?: string;
     size?: number;
     page?: number;
   } = {}) => {
@@ -65,10 +73,12 @@ export const fetchUbaAggregatedBalance = async (params: {
   
 // fetchPtbAggregatedBalance
 export const fetchPtbAggregatedBalance = async (params: {
-    search?: string;
+     search?: string;
     start?: string;
     end?: string;
     account_number?: string;
+    mode?: string;
+    ordering?: string;
     size?: number;
     page?: number;
   } = {}) => {
@@ -77,10 +87,12 @@ export const fetchPtbAggregatedBalance = async (params: {
 }
 
   export const fetchPtbStatements = async (params: {
-    search?: string;
+     search?: string;
     start?: string;
     end?: string;
     account_number?: string;
+    mode?: string;
+    ordering?: string;
     size?: number;
     page?: number;
   } = {}) => {
