@@ -230,11 +230,11 @@ const {mutate: login, isPending} = useLogin()
             </motion.button>
           </form>
 
-          <div className="mt-8 pt-6 text-center" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+          {/* <div className="mt-8 pt-6 text-center" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
             <p className="text-xs leading-relaxed italic" style={{ color: 'rgba(255,255,255,0.35)' }}>
               By logging in, you acknowledge that all sessions are monitored and recorded. Multi-factor authentication required for external access.
             </p>
-          </div>
+          </div> */}
         </div>
 
       
