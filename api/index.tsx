@@ -7,6 +7,11 @@ export const login = async (data: any) => {
   return res.data;
 };
 
+export async function aggregatedBalances() {
+  const res = await privateApi.get("/integrations/aggregated-balance");
+  return res.data;
+}
+
 // fetchZenithAggregatedBalance
 export const fetchZenithAggregatedBalance = async (params: {
      search?: string;

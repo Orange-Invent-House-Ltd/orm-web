@@ -2,9 +2,10 @@
 
 import { motion } from 'framer-motion'
 import { useForm } from 'react-hook-form'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { User, Mail, Phone, Building2, KeyRound, Camera, CheckCircle2 } from 'lucide-react'
+import { redirect } from 'next/navigation'
 
 interface ProfileForm {
   fullName: string
@@ -15,6 +16,11 @@ interface ProfileForm {
 }
 
 export default function ProfilePage() {
+
+  useEffect(() => {
+    redirect('/404')
+  }, [])
+
   const [saved, setSaved] = useState(false)
   const { register, handleSubmit, formState: { isDirty } } = useForm<ProfileForm>({
     defaultValues: {

@@ -1,5 +1,5 @@
 import { useQuery, UseQueryOptions } from "@tanstack/react-query";
-import { fetchPtbAggregatedBalance, fetchPtbStatements, fetchUbaAggregatedBalance, fetchUbaStatements, fetchZenithAggregatedBalance, fetchZenithStatements, } from "..";
+import { aggregatedBalances, fetchPtbAggregatedBalance, fetchPtbStatements, fetchUbaAggregatedBalance, fetchUbaStatements, fetchZenithAggregatedBalance, fetchZenithStatements, } from "..";
 
 type StatementParams = {
    search?: string;
@@ -14,6 +14,16 @@ type StatementParams = {
 // 
 type ExtraOptions = Omit<UseQueryOptions, 'queryKey' | 'queryFn'>
 // use agreegated balance
+
+export function useAggregatedBalances() {
+  return useQuery({
+    queryFn: aggregatedBalances,
+    queryKey: ["aggregatedBalances"],
+  });
+}
+
+
+
 export const useFetchZenithAggregatedBalance = (
   params?: {
   search?: string;

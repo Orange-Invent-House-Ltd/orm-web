@@ -26,6 +26,12 @@ const navItem = {
 // Bank routes with proper icons and colors
 const bankRoute = [
   {
+    route: '/dashboard',
+    name: 'Dashboard',
+    icon: LayoutDashboard,
+    color: '#13ec5b', // Green
+  },
+  {
     route: '/banks/zenith',
     name: 'Zenith Bank',
     icon: Landmark,
@@ -222,8 +228,7 @@ export default function Sidebar() {
 
       {/* Bottom: Profile + Logout */}
       <div className="px-3 pb-4 space-y-1" style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '12px' }}>
-        <Link
-          href="/profile"
+        <div
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group relative"
           style={{
             backgroundColor: isActive('/profile') ? 'rgba(255,255,255,0.06)' : 'transparent',
@@ -241,14 +246,14 @@ export default function Sidebar() {
             className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
             style={{ backgroundColor: 'rgba(19,236,91,0.12)', color: '#13ec5b' }}
           >
-            AC
+          
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-white leading-none">Alex Chen</p>
-            <p className="text-xs mt-0.5 truncate" style={{ color: 'rgba(255,255,255,0.35)' }}>Admin</p>
+            <p className="text-sm font-semibold text-white leading-none">KDGOV</p>
+            {/* <p className="text-xs mt-0.5 truncate" style={{ color: 'rgba(255,255,255,0.35)' }}>Admin</p> */}
           </div>
           <User size={14} style={{ color: 'rgba(255,255,255,0.3)' }} />
-        </Link>
+        </div>
 
         <button
           onClick={handleLogout}
