@@ -5,6 +5,16 @@ import Providers from '@/lib/Providers'
 export const metadata: Metadata = {
   title: 'Kaduna Finance — Bank Account Mornitoring Dashboard',
   description: 'Secure multi-bank financial oversight platform',
+   manifest: "/manifest.json", // Point to the static file
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Kaduna ERP",
+  },
+  icons: {
+    icon: "/logo.png",
+    apple: "/kd-180.png",
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
