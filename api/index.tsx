@@ -3,7 +3,11 @@ import { privateApi, publicApi } from "./axios"
 
 
 export const login = async (data: any) => {
-  const res = await publicApi.post("/auth/login/orm", data);
+  const res = await publicApi.post("/auth/login/2fa/initialize", data);
+  return res.data;
+};
+export const verify2fa = async (data: any) => {
+  const res = await publicApi.post("/auth/login/2fa/finalize", data);
   return res.data;
 };
 

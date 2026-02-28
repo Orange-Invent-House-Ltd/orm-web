@@ -1,7 +1,8 @@
 import axios from "axios";
 import { toast } from "react-toastify";
 
-// const API_KEY = import.meta.env.VITE_API_KEY;
+
+
 const BASE_URL =process.env.NEXT_PUBLIC_BASE_URL;
 
 export const publicApi = axios.create({
@@ -14,7 +15,7 @@ export const privateApi = axios.create({
 
 privateApi.interceptors.request.use(
   (config) => {
-    const sessionToken = sessionStorage.getItem("token");
+    const sessionToken = localStorage.getItem("token");
     if (!sessionToken) {
       return config;
     }
