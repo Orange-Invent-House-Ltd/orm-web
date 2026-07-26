@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Shield, ChevronRight, Copy, Check, ArrowRight, Clock, AlertTriangle } from "lucide-react";
 import { useTimerStore } from "../../../store/timerStore";
 
@@ -129,7 +130,7 @@ export default function TwoFASetupPage() {
             style={{ background: "linear-gradient(135deg, rgba(19,236,91,0.1) 0%, rgba(16,34,22,1) 100%)" }} />
           <div className="relative z-10 flex flex-col items-center">
             <div className="shadow-[0_0_30px_rgba(19,236,91,0.2)]">
-              <img src={qrDataUri} alt="2FA QR Code" width={250} height={250} className="block" />
+              <Image src={qrDataUri} alt="2FA QR Code" width={250} height={250} className="block" />
             </div>
             <div className="my-8 flex w-full items-center gap-4">
               <div className="h-px grow bg-slate-800" />

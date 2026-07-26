@@ -182,7 +182,7 @@ export default function OTPPage() {
 
             <div className="mt-6 flex flex-col items-center gap-4">
               <p className="text-sm" style={{ color: 'rgba(148,163,184,0.8)' }}>
-                Didn't receive a code?{' '}
+                Didn&apos;t receive a code?{' '}
                 {countdown > 0 ? (
                   <span style={{ color: 'rgba(19,236,91,0.6)' }}>Resend in 0:{String(countdown).padStart(2, '0')}</span>
                 ) : (
