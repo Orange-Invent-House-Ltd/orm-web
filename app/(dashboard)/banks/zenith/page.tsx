@@ -296,9 +296,7 @@ export default function ZenithBankPage() {
       {/* Non-MDA Accounts */}
       {!isLoading && accounts.length > 0 && (
         <section className="mb-8" id="mda">
-          <h2 className="text-lg font-bold text-white tracking-tight mb-4">
-            Non-MDA Accounts
-          </h2>
+         
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
             {accounts.map((acc: any, i: number) => {
               const isActive: boolean = acc.isActive;
