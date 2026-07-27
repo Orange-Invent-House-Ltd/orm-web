@@ -290,260 +290,341 @@ export default function UbaBankPage() {
             Non-MDA Accounts
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
-          {nonMdaAccounts.map((acc: any, i: number) => {
-            const isActive: boolean = acc.isActive;
-            const currencyCfg =
-              CURRENCY_CONFIG[acc.currency as keyof typeof CURRENCY_CONFIG];
-            const accentColor = currencyCfg?.color ?? "#13ec5b";
-            const balanceAsOf = acc.balanceAsOf
-              ? new Date(acc.balanceAsOf).toLocaleString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  hour: "numeric",
-                  minute: "2-digit",
-                })
-              : null;
+            {nonMdaAccounts.map((acc: any, i: number) => {
+              const isActive: boolean = acc.isActive;
+              const currencyCfg =
+                CURRENCY_CONFIG[acc.currency as keyof typeof CURRENCY_CONFIG];
+              const accentColor = currencyCfg?.color ?? "#13ec5b";
+              const balanceAsOf = acc.balanceAsOf
+                ? new Date(acc.balanceAsOf).toLocaleString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit",
+                  })
+                : null;
 
-            return (
-              <Link
-                key={acc.accountNumber ?? i}
-                href="/transactions"
-                onClick={() => {
-                  localStorage.setItem("bankName", "uba");
-                  setActiveBank(acc.accountNumber);
-                }}
-              >
-                <motion.div
+              return (
+                <Link
                   key={acc.accountNumber ?? i}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 + i * 0.08, duration: 0.45 }}
-                  className="rounded-2xl p-6 cursor-pointer group transition-all"
-                  style={{
-                    backgroundColor: "rgba(255,255,255,0.04)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                  }}
-                  whileHover={{
-                    scale: 1.01,
-                    boxShadow: `0 0 30px ${accentColor}`,
+                  href="/transactions"
+                  onClick={() => {
+                    localStorage.setItem("bankName", "uba");
+                    setActiveBank(acc.accountNumber);
                   }}
                 >
-                  {/* Account name + number + isActive + currency */}
-                  <div className="flex justify-between items-start mb-5">
-                    <div className="flex-1 pr-3">
-                      <p className="text-sm font-bold text-white leading-snug mb-1.5">
-                        {acc.accountName}
-                      </p>
-                      <div className="flex items-center gap-1.5">
-                        <span
-                          className="text-[10px] font-medium"
-                          style={{ color: "rgba(255,255,255,0.4)" }}
-                        >
-                          Acct No:
-                        </span>
-                        <span className="text-sm font-mono font-bold text-white">
-                          {acc.accountNumber}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                      {/* Currency tag */}
-                      <div
-                        className="rounded-lg px-2 py-1 text-xs font-bold"
-                        style={{
-                          backgroundColor: `${accentColor}18`,
-                          color: accentColor,
-                        }}
-                      >
-                        {acc.currency}
-                      </div>
-                      {/* isActive badge */}
-                      <span
-                        className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full flex items-center gap-1"
-                        style={{
-                          backgroundColor: isActive
-                            ? "rgba(19,236,91,0.1)"
-                            : "rgba(148,163,184,0.1)",
-                          color: isActive ? "#13ec5b" : "#94a3b8",
-                          border: `1px solid ${isActive ? "rgba(19,236,91,0.22)" : "rgba(148,163,184,0.15)"}`,
-                        }}
-                      >
-                        <span
-                          className="w-1.5 h-1.5 rounded-full"
-                          style={{
-                            backgroundColor: isActive ? "#13ec5b" : "#94a3b8",
-                            display: "inline-block",
-                          }}
-                        />
-                        {isActive ? "Active" : "Inactive"}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* ── Current Balance ── */}
-                  <div className="mb-3">
-                    <p
-                      className="text-[10px] font-bold uppercase tracking-widest mb-1"
-                      style={{ color: "rgba(255,255,255,0.35)" }}
-                    >
-                      Current Balance
-                    </p>
-                    <p
-                      className="text-2xl font-extrabold text-white tracking-tight"
-                      title={acc.currentBalance}
-                    >
-                      {formatBalance(acc.currentBalance, acc.currency)}
-                    </p>
-                  </div>
-
-                  {/* ── Available Balance ── */}
-                  <div
-                    className="rounded-xl px-3 py-2.5 mb-4"
+                  <motion.div
+                    key={acc.accountNumber ?? i}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 + i * 0.08, duration: 0.45 }}
+                    className="rounded-2xl p-6 cursor-pointer group transition-all"
                     style={{
-                      backgroundColor: `${accentColor}08`,
-                      border: `1px solid ${accentColor}1a`,
+                      backgroundColor: "rgba(255,255,255,0.04)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                    }}
+                    whileHover={{
+                      scale: 1.01,
+                      boxShadow: `0 0 30px ${accentColor}`,
                     }}
                   >
-                    <p
-                      className="text-[10px] font-bold uppercase tracking-widest mb-0.5"
-                      style={{ color: "rgba(255,255,255,0.35)" }}
-                    >
-                      Available Balance
-                    </p>
-                    <p
-                      className="text-base font-bold"
-                      style={{ color: accentColor }}
-                      title={acc.availableBalance}
-                    >
-                      {formatBalance(acc.availableBalance, acc.currency)}
-                    </p>
-                  </div>
-
-                  {/* Footer */}
-                  <div
-                    className="pt-3"
-                    style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      {/* Sync status */}
-                      <div className="flex items-center gap-1.5">
-                        <span
-                          className="w-1.5 h-1.5 rounded-full"
+                    {/* Account name + number + isActive + currency */}
+                    <div className="flex justify-between items-start mb-5">
+                      <div className="flex-1 pr-3">
+                        <p className="text-sm font-bold text-white leading-snug mb-1.5">
+                          {acc.accountName}
+                        </p>
+                        <div className="flex items-center gap-1.5">
+                          <span
+                            className="text-[10px] font-medium"
+                            style={{ color: "rgba(255,255,255,0.4)" }}
+                          >
+                            Acct No:
+                          </span>
+                          <span className="text-sm font-mono font-bold text-white">
+                            {acc.accountNumber}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                        {/* Currency tag */}
+                        <div
+                          className="rounded-lg px-2 py-1 text-xs font-bold"
                           style={{
-                            backgroundColor:
-                              acc.lastUpdateStatus === "SUCCESS"
-                                ? "#13ec5b"
-                                : acc.lastUpdateStatus === "PENDING"
-                                  ? "#f59e0b"
-                                  : "#ef4444",
+                            backgroundColor: `${accentColor}18`,
+                            color: accentColor,
                           }}
-                        />
-                        <span
-                          className="text-xs"
-                          style={{ color: "rgba(255,255,255,0.4)" }}
                         >
-                          {acc.lastUpdateStatus === "SUCCESS"
-                            ? "Live Sync"
-                            : acc.lastUpdateStatus === "PENDING"
-                              ? "Sync Pending"
-                              : "Sync Failed"}
+                          {acc.currency}
+                        </div>
+                        {/* isActive badge */}
+                        <span
+                          className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full flex items-center gap-1"
+                          style={{
+                            backgroundColor: isActive
+                              ? "rgba(19,236,91,0.1)"
+                              : "rgba(148,163,184,0.1)",
+                            color: isActive ? "#13ec5b" : "#94a3b8",
+                            border: `1px solid ${isActive ? "rgba(19,236,91,0.22)" : "rgba(148,163,184,0.15)"}`,
+                          }}
+                        >
+                          <span
+                            className="w-1.5 h-1.5 rounded-full"
+                            style={{
+                              backgroundColor: isActive ? "#13ec5b" : "#94a3b8",
+                              display: "inline-block",
+                            }}
+                          />
+                          {isActive ? "Active" : "Inactive"}
                         </span>
                       </div>
-                      {/* Balance as-of timestamp */}
-                      {balanceAsOf && (
-                        <span
-                          className="text-[10px]"
-                          style={{ color: "rgba(255,255,255,0.28)" }}
-                        >
-                          As of {balanceAsOf}
-                        </span>
-                      )}
                     </div>
 
-                    {/* Optional error message
+                    {/* ── Current Balance ── */}
+                    <div className="mb-3">
+                      <p
+                        className="text-[10px] font-bold uppercase tracking-widest mb-1"
+                        style={{ color: "rgba(255,255,255,0.35)" }}
+                      >
+                        Current Balance
+                      </p>
+                      <p
+                        className="text-2xl font-extrabold text-white tracking-tight"
+                        title={acc.currentBalance}
+                      >
+                        {formatBalance(acc.currentBalance, acc.currency)}
+                      </p>
+                    </div>
+
+                    {/* ── Available Balance ── */}
+                    <div
+                      className="rounded-xl px-3 py-2.5 mb-4"
+                      style={{
+                        backgroundColor: `${accentColor}08`,
+                        border: `1px solid ${accentColor}1a`,
+                      }}
+                    >
+                      <p
+                        className="text-[10px] font-bold uppercase tracking-widest mb-0.5"
+                        style={{ color: "rgba(255,255,255,0.35)" }}
+                      >
+                        Available Balance
+                      </p>
+                      <p
+                        className="text-base font-bold"
+                        style={{ color: accentColor }}
+                        title={acc.availableBalance}
+                      >
+                        {formatBalance(acc.availableBalance, acc.currency)}
+                      </p>
+                    </div>
+
+                    {/* Footer */}
+                    <div
+                      className="pt-3"
+                      style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        {/* Sync status */}
+                        <div className="flex items-center gap-1.5">
+                          <span
+                            className="w-1.5 h-1.5 rounded-full"
+                            style={{
+                              backgroundColor:
+                                acc.lastUpdateStatus === "SUCCESS"
+                                  ? "#13ec5b"
+                                  : acc.lastUpdateStatus === "PENDING"
+                                    ? "#f59e0b"
+                                    : "#ef4444",
+                            }}
+                          />
+                          <span
+                            className="text-xs"
+                            style={{ color: "rgba(255,255,255,0.4)" }}
+                          >
+                            {acc.lastUpdateStatus === "SUCCESS"
+                              ? "Live Sync"
+                              : acc.lastUpdateStatus === "PENDING"
+                                ? "Sync Pending"
+                                : "Sync Failed"}
+                          </span>
+                        </div>
+                        {/* Balance as-of timestamp */}
+                        {balanceAsOf && (
+                          <span
+                            className="text-[10px]"
+                            style={{ color: "rgba(255,255,255,0.28)" }}
+                          >
+                            As of {balanceAsOf}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Optional error message
                   {acc.lastUpdateMessage && (
                     <p className="text-[10px] mb-2" style={{ color: 'rgba(255,100,100,0.65)' }}>
                       {acc.lastUpdateMessage}
                     </p>
                   )} */}
 
-                    <button
-                      className="text-[10px] font-bold uppercase tracking-widest transition-opacity hover:opacity-60"
-                      style={{ color: "rgba(255,255,255,0.35)" }}
-                    >
-                      View Transactions →
-                    </button>
-                  </div>
-                </motion.div>
-              </Link>
-            );
-          })}
-        </div>
+                      <button
+                        className="text-[10px] font-bold uppercase tracking-widest transition-opacity hover:opacity-60"
+                        style={{ color: "rgba(255,255,255,0.35)" }}
+                      >
+                        View Transactions →
+                      </button>
+                    </div>
+                  </motion.div>
+                </Link>
+              );
+            })}
+          </div>
         </>
       )}
 
       {/* MDA Accounts */}
       {!isLoading && mdaAccounts.length > 0 && (
-        <div className="mb-8">
+        <div className="mb-8" id="mda">
           <h2 className="text-lg font-bold text-white tracking-tight mb-4">
             MDA Accounts
           </h2>
-          <div className="rounded-2xl overflow-x-auto" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
+          <div
+            className="rounded-2xl overflow-x-auto"
+            style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+          >
             <table className="w-full text-sm">
               <thead>
-                <tr style={{ backgroundColor: 'rgba(255,255,255,0.04)' }}>
-                  <th className="text-left px-4 py-3 text-[10px] font-bold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.4)' }}>Account Name</th>
-                  <th className="text-left px-4 py-3 text-[10px] font-bold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.4)' }}>Account No</th>
-                  <th className="text-left px-4 py-3 text-[10px] font-bold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.4)' }}>Currency</th>
-                  <th className="text-right px-4 py-3 text-[10px] font-bold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.4)' }}>Current Balance</th>
-                  <th className="text-right px-4 py-3 text-[10px] font-bold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.4)' }}>Available Balance</th>
-                  <th className="text-center px-4 py-3 text-[10px] font-bold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.4)' }}>Status</th>
+                <tr style={{ backgroundColor: "rgba(255,255,255,0.04)" }}>
+                  <th
+                    className="text-left px-4 py-3 text-[10px] font-bold uppercase tracking-widest"
+                    style={{ color: "rgba(255,255,255,0.4)" }}
+                  >
+                    Account Name
+                  </th>
+                  <th
+                    className="text-left px-4 py-3 text-[10px] font-bold uppercase tracking-widest"
+                    style={{ color: "rgba(255,255,255,0.4)" }}
+                  >
+                    Account No
+                  </th>
+                  <th
+                    className="text-left px-4 py-3 text-[10px] font-bold uppercase tracking-widest"
+                    style={{ color: "rgba(255,255,255,0.4)" }}
+                  >
+                    Currency
+                  </th>
+                  <th
+                    className="text-right px-4 py-3 text-[10px] font-bold uppercase tracking-widest"
+                    style={{ color: "rgba(255,255,255,0.4)" }}
+                  >
+                    Current Balance
+                  </th>
+                  <th
+                    className="text-right px-4 py-3 text-[10px] font-bold uppercase tracking-widest"
+                    style={{ color: "rgba(255,255,255,0.4)" }}
+                  >
+                    Available Balance
+                  </th>
+                  <th
+                    className="text-center px-4 py-3 text-[10px] font-bold uppercase tracking-widest"
+                    style={{ color: "rgba(255,255,255,0.4)" }}
+                  >
+                    Status
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {mdaAccounts.map((acc: any, i: number) => {
-                  const currencyCfg = CURRENCY_CONFIG[acc.currency as keyof typeof CURRENCY_CONFIG]
-                  const accentColor = currencyCfg?.color ?? '#13ec5b'
-                  const isActive = acc.isActive
+                  const currencyCfg =
+                    CURRENCY_CONFIG[
+                      acc.currency as keyof typeof CURRENCY_CONFIG
+                    ];
+                  const accentColor = currencyCfg?.color ?? "#13ec5b";
+                  const isActive = acc.isActive;
                   return (
-                    <Link key={acc.accountNumber ?? i} href="/transactions"
+                    <Link
+                      key={acc.accountNumber ?? i}
+                      href="/transactions"
                       onClick={() => {
-                        localStorage.setItem('bankName','uba')
-                        setActiveBank(acc.accountNumber)
+                        localStorage.setItem("bankName", "uba");
+                        setActiveBank(acc.accountNumber);
                       }}
                     >
-                      <tr className="cursor-pointer transition-colors hover:opacity-80" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                      <tr
+                        className="cursor-pointer transition-colors hover:opacity-80"
+                        style={{
+                          borderTop: "1px solid rgba(255,255,255,0.05)",
+                        }}
+                      >
                         <td className="px-4 py-3">
-                          <p className="font-bold text-white text-xs">{acc.accountName}</p>
+                          <p className="font-bold text-white text-xs">
+                            {acc.accountName}
+                          </p>
                           {acc.lastUpdateMessage && (
-                            <p className="text-[10px] mt-0.5" style={{ color: 'rgba(255,100,100,0.65)' }}>{acc.lastUpdateMessage}</p>
+                            <p
+                              className="text-[10px] mt-0.5"
+                              style={{ color: "rgba(255,100,100,0.65)" }}
+                            >
+                              {acc.lastUpdateMessage}
+                            </p>
                           )}
                         </td>
                         <td className="px-4 py-3">
-                          <span className="font-mono text-xs" style={{ color: 'rgba(255,255,255,0.6)' }}>{acc.accountNumber}</span>
+                          <span
+                            className="font-mono text-xs"
+                            style={{ color: "rgba(255,255,255,0.6)" }}
+                          >
+                            {acc.accountNumber}
+                          </span>
                         </td>
                         <td className="px-4 py-3">
-                          <span className="text-xs font-bold px-2 py-0.5 rounded" style={{ backgroundColor: `${accentColor}18`, color: accentColor }}>
+                          <span
+                            className="text-xs font-bold px-2 py-0.5 rounded"
+                            style={{
+                              backgroundColor: `${accentColor}18`,
+                              color: accentColor,
+                            }}
+                          >
                             {acc.currency}
                           </span>
                         </td>
                         <td className="px-4 py-3 text-right">
-                          <span className="font-bold text-white text-xs">{formatBalance(acc.currentBalance, acc.currency)}</span>
+                          <span className="font-bold text-white text-xs">
+                            {formatBalance(acc.currentBalance, acc.currency)}
+                          </span>
                         </td>
                         <td className="px-4 py-3 text-right">
-                          <span className="font-bold text-xs" style={{ color: accentColor }}>{formatBalance(acc.availableBalance, acc.currency)}</span>
+                          <span
+                            className="font-bold text-xs"
+                            style={{ color: accentColor }}
+                          >
+                            {formatBalance(acc.availableBalance, acc.currency)}
+                          </span>
                         </td>
                         <td className="px-4 py-3 text-center">
                           <div className="flex items-center justify-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: isActive ? '#13ec5b' : '#94a3b8', display: 'inline-block' }} />
-                            <span className="text-[10px] font-bold" style={{ color: isActive ? '#13ec5b' : '#94a3b8' }}>
-                              {isActive ? 'Active' : 'Inactive'}
+                            <span
+                              className="w-1.5 h-1.5 rounded-full"
+                              style={{
+                                backgroundColor: isActive
+                                  ? "#13ec5b"
+                                  : "#94a3b8",
+                                display: "inline-block",
+                              }}
+                            />
+                            <span
+                              className="text-[10px] font-bold"
+                              style={{
+                                color: isActive ? "#13ec5b" : "#94a3b8",
+                              }}
+                            >
+                              {isActive ? "Active" : "Inactive"}
                             </span>
                           </div>
                         </td>
                       </tr>
                     </Link>
-                  )
+                  );
                 })}
               </tbody>
             </table>

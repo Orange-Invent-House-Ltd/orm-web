@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useMemo, useState } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -16,8 +16,15 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { TrendingUp, Building2, RefreshCw, Landmark } from "lucide-react";
+import {
+  TrendingUp,
+  Building2,
+  RefreshCw,
+  Landmark,
+  ArrowRight,
+} from "lucide-react";
 import { useAggregatedBalances } from "@/api/query";
+import Link from "next/link";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -44,7 +51,12 @@ const BANK_LABELS: Record<string, string> = {
   PREMIUMTRUST: "PremiumTrust",
 };
 
-/** Full number with commas and 2 decimals e.g. ₦14,886,945,310.09 */
+const BANK_ROUTES: Record<string, string> = {
+  ZENITH: "/banks/zenith",
+  UBA: "/banks/uba",
+  PREMIUMTRUST: "/banks/ptb",
+};
+
 function formatNGN(value: number) {
   return (
     "₦" +
@@ -65,7 +77,6 @@ function formatUSD(value: number) {
   );
 }
 
-/** Abbreviated for Y-axis only */
 function shortNGN(value: number) {
   if (value >= 1_000_000_000) return `₦${(value / 1_000_000_000).toFixed(1)}B`;
   if (value >= 1_000_000) return `₦${(value / 1_000_000).toFixed(0)}M`;
@@ -119,7 +130,6 @@ const CustomPieTooltip = ({ active, payload }: any) => {
 export default function DashboardPage() {
   const { data, isLoading, refetch } = useAggregatedBalances();
   const kpiRef = useRef<HTMLDivElement>(null);
-  const [chartView, setChartView] = useState<"nonMda" | "mda">("nonMda");
 
   const {
     totalNGN,
@@ -127,10 +137,7 @@ export default function DashboardPage() {
     bankTotals,
     pieData,
     barData,
-    mdaBankTotals,
-    mdaPieData,
-    mdaBarData,
-    mdaTotalNGN,
+    totalNGNAll,
     lastSync,
     syncedCount,
     trackedCount,
@@ -148,31 +155,24 @@ export default function DashboardPage() {
         }[],
         pieData: [] as { name: string; value: number; color: string }[],
         barData: [] as Record<string, any>[],
-        mdaBankTotals: [] as {
-          key: string;
-          label: string;
-          color: string;
-          ngnTotal: number;
-          usdTotal: number;
-        }[],
-        mdaPieData: [] as { name: string; value: number; color: string }[],
-        mdaBarData: [] as Record<string, any>[],
-        mdaTotalNGN: 0,
+        totalNGNAll: 0,
         lastSync: null as string | null,
         syncedCount: 0,
         trackedCount: 0,
       };
     }
 
+    const nonMda = data.nonMdaAccounts ?? {};
+
     const totalNGN = parseFloat(
-      data.balancesByCurrency?.NGN?.totalCurrentBalance ?? "0",
+      nonMda.balancesByCurrency?.NGN?.totalCurrentBalance ?? "0",
     );
     const totalUSD = parseFloat(
-      data.balancesByCurrency?.USD?.totalCurrentBalance ?? "0",
+      nonMda.balancesByCurrency?.USD?.totalCurrentBalance ?? "0",
     );
 
     const grouped: Record<string, { ngnTotal: number; usdTotal: number }> = {};
-    for (const acc of data?.nonMdaAccounts?.aggregatedAccounts ?? []) {
+    for (const acc of nonMda.aggregatedAccounts ?? []) {
       const bank = acc.bankName.toUpperCase();
       if (!grouped[bank]) grouped[bank] = { ngnTotal: 0, usdTotal: 0 };
       const bal = parseFloat(acc.currentBalance);
@@ -197,33 +197,7 @@ export default function DashboardPage() {
       color: b.color,
     }));
 
-    const mdaGrouped: Record<string, { ngnTotal: number; usdTotal: number }> = {};
-    for (const acc of data?.mdaAccounts?.aggregatedAccounts ?? []) {
-      const bank = acc.bankName.toUpperCase();
-      if (!mdaGrouped[bank]) mdaGrouped[bank] = { ngnTotal: 0, usdTotal: 0 };
-      const bal = parseFloat(acc.currentBalance);
-      if (acc.currency === "NGN") mdaGrouped[bank].ngnTotal += bal;
-      else if (acc.currency === "USD") mdaGrouped[bank].usdTotal += bal;
-    }
-
-    const mdaBankTotals = Object.entries(mdaGrouped).map(([key, vals]) => ({
-      key,
-      label: BANK_LABELS[key] ?? key,
-      color: BANK_COLORS[key] ?? "#a78bfa",
-      ...vals,
-    }));
-
-    const mdaPieData = mdaBankTotals
-      .filter((b) => b.ngnTotal > 0)
-      .map((b) => ({ name: b.label, value: b.ngnTotal, color: b.color }));
-
-    const mdaBarData = mdaBankTotals.map((b) => ({
-      bank: b.label,
-      balance: b.ngnTotal,
-      color: b.color,
-    }));
-
-    const mdaTotalNGN = mdaBankTotals.reduce((sum, b) => sum + b.ngnTotal, 0);
+    const totalNGNAll = bankTotals.reduce((sum, b) => sum + b.ngnTotal, 0);
 
     return {
       totalNGN,
@@ -231,22 +205,12 @@ export default function DashboardPage() {
       bankTotals,
       pieData,
       barData,
-      mdaBankTotals,
-      mdaPieData,
-      mdaBarData,
-      mdaTotalNGN,
-      lastSync: data.lastSuccessfulSyncTime ?? null,
-      syncedCount: data.successfullySyncedCount ?? 0,
-      trackedCount: data.trackedAccountCount ?? 0,
+      totalNGNAll,
+      lastSync: nonMda.lastSuccessfulSyncTime ?? null,
+      syncedCount: nonMda.successfullySyncedCount ?? 0,
+      trackedCount: nonMda.trackedAccountCount ?? 0,
     };
   }, [data]);
-
-  const hasMdaData = mdaBankTotals.length > 0;
-
-  const activeBankTotals = chartView === "mda" && hasMdaData ? mdaBankTotals : bankTotals;
-  const activePieData = chartView === "mda" && hasMdaData ? mdaPieData : pieData;
-  const activeBarData = chartView === "mda" && hasMdaData ? mdaBarData : barData;
-  const activeTotalNGN = chartView === "mda" && hasMdaData ? mdaTotalNGN : totalNGN;
 
   useEffect(() => {
     if (!kpiRef.current || isLoading) return;
@@ -272,26 +236,38 @@ export default function DashboardPage() {
     : "—";
 
   return (
-    <div className="p-8 min-h-screen" style={{ backgroundColor: "#0d1a11" }}>
+    <div className="p-4 sm:p-8 min-h-screen" style={{ backgroundColor: "#0d1a11" }}>
       {/* ── Page Header ──────────────────────────────────────────────────── */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45 }}
-        className="flex items-start justify-between mb-8"
+        className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-8"
       >
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
             Dashboard Overview
           </h1>
           <p
-            className="text-sm mt-1"
+            className="text-xs sm:text-sm mt-1"
             style={{ color: "rgba(255,255,255,0.4)" }}
           >
             Real-time view of all your financial institutions
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+          <Link
+            href="/dashboard/mda"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all hover:opacity-80 whitespace-nowrap"
+            style={{
+              backgroundColor: "rgba(245,158,11,0.12)",
+              border: "1px solid rgba(245,158,11,0.25)",
+              color: "#f59e0b",
+            }}
+          >
+            MDA Accounts
+            <ArrowRight size={14} />
+          </Link>
           <div className="text-right">
             <p
               className="text-xs font-medium"
@@ -442,216 +418,118 @@ export default function DashboardPage() {
                 }}
               />
             ))
-          : bankTotals.map((bank) => (
-              <div
-                key={bank.key}
-                className="rounded-2xl p-6 relative overflow-hidden"
-                style={{
-                  backgroundColor: "rgba(255,255,255,0.04)",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                }}
-              >
-                <div
-                  className="absolute top-0 right-0 w-40 h-40 rounded-full pointer-events-none"
-                  style={{
-                    backgroundColor: `${bank.color}0d`,
-                    filter: "blur(40px)",
-                    transform: "translate(30%, -30%)",
-                  }}
-                />
-
-                {/* Bank header */}
-                <div className="flex items-center gap-3 mb-5">
+          : bankTotals.map((bank) => {
+              const route = BANK_ROUTES[bank.key];
+              const outerClass = "rounded-2xl p-6 relative overflow-hidden transition-all hover:opacity-85";
+              const outerStyle = {
+                backgroundColor: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.08)",
+              };
+              const content = (
+                <>
                   <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: `${bank.color}18` }}
-                  >
-                    <Building2 size={16} color={bank.color} />
+                    className="absolute top-0 right-0 w-40 h-40 rounded-full pointer-events-none"
+                    style={{
+                      backgroundColor: `${bank.color}0d`,
+                      filter: "blur(40px)",
+                      transform: "translate(30%, -30%)",
+                    }}
+                  />
+
+                  {/* Bank header */}
+                  <div className="flex items-center gap-3 mb-5">
+                    <div
+                      className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={{ backgroundColor: `${bank.color}18` }}
+                    >
+                      <Building2 size={16} color={bank.color} />
+                    </div>
+                    <p className="text-base font-bold text-white">{bank.label}</p>
                   </div>
-                  <p className="text-base font-bold text-white">{bank.label}</p>
-                </div>
 
-                {/* NGN balance */}
-                <div className="mb-4">
-                  <p
-                    className="text-xs font-semibold mb-1.5 uppercase tracking-wider"
-                    style={{ color: "rgba(255,255,255,0.38)" }}
-                  >
-                    NGN Balance
-                  </p>
-                  <p className="text-lg sm:text-xl lg:text-2xl font-extrabold text-white tracking-tight">
-                    {formatNGN(bank.ngnTotal)}
-                  </p>
-                </div>
-
-                {/* USD balance — always shown */}
-                <div
-                  className="rounded-xl px-4 py-3 mb-5"
-                  style={{
-                    backgroundColor: "rgba(96,165,250,0.07)",
-                    border: "1px solid rgba(96,165,250,0.14)",
-                  }}
-                >
-                  <p
-                    className="text-xs font-semibold mb-1 uppercase tracking-wider"
-                    style={{ color: "rgba(255,255,255,0.38)" }}
-                  >
-                    USD Balance
-                  </p>
-                  <p
-                    className="text-sm sm:text-base font-extrabold"
-                    style={{ color: "#60a5fa" }}
-                  >
-                    {formatUSD(bank.usdTotal)}
-                  </p>
-                </div>
-
-                {/* Share of total */}
-                <div>
-                  <div className="flex justify-between text-xs mb-1.5">
-                    <span style={{ color: "rgba(255,255,255,0.35)" }}>
-                      Share of total NGN
-                    </span>
-                    <span className="font-bold" style={{ color: bank.color }}>
-                      {totalNGN > 0
-                        ? ((bank.ngnTotal / totalNGN) * 100).toFixed(2)
-                        : "0.00"}
-                      %
-                    </span>
+                  {/* NGN balance */}
+                  <div className="mb-4">
+                    <p
+                      className="text-xs font-semibold mb-1.5 uppercase tracking-wider"
+                      style={{ color: "rgba(255,255,255,0.38)" }}
+                    >
+                      NGN Balance
+                    </p>
+                    <p className="text-lg sm:text-xl lg:text-2xl font-extrabold text-white tracking-tight">
+                      {formatNGN(bank.ngnTotal)}
+                    </p>
                   </div>
+
+                  {/* USD balance */}
                   <div
-                    className="h-1.5 rounded-full overflow-hidden"
-                    style={{ backgroundColor: "rgba(255,255,255,0.06)" }}
+                    className="rounded-xl px-4 py-3 mb-5"
+                    style={{
+                      backgroundColor: "rgba(96,165,250,0.07)",
+                      border: "1px solid rgba(96,165,250,0.14)",
+                    }}
                   >
-                    <motion.div
-                      className="h-full rounded-full"
-                      style={{ backgroundColor: bank.color }}
-                      initial={{ width: 0 }}
-                      animate={{
-                        width:
-                          totalNGN > 0
-                            ? `${(bank.ngnTotal / totalNGN) * 100}%`
-                            : "0%",
-                      }}
-                      transition={{
-                        duration: 0.9,
-                        delay: 0.3,
-                        ease: "easeOut",
-                      }}
-                    />
+                    <p
+                      className="text-xs font-semibold mb-1 uppercase tracking-wider"
+                      style={{ color: "rgba(255,255,255,0.38)" }}
+                    >
+                      USD Balance
+                    </p>
+                    <p
+                      className="text-sm sm:text-base font-extrabold"
+                      style={{ color: "#60a5fa" }}
+                    >
+                      {formatUSD(bank.usdTotal)}
+                    </p>
                   </div>
+
+                  {/* Share of total */}
+                  <div>
+                    <div className="flex justify-between text-xs mb-1.5">
+                      <span style={{ color: "rgba(255,255,255,0.35)" }}>
+                        Share of total NGN
+                      </span>
+                      <span className="font-bold" style={{ color: bank.color }}>
+                        {totalNGNAll > 0
+                          ? ((bank.ngnTotal / totalNGNAll) * 100).toFixed(2)
+                          : "0.00"}
+                        %
+                      </span>
+                    </div>
+                    <div
+                      className="h-1.5 rounded-full overflow-hidden"
+                      style={{ backgroundColor: "rgba(255,255,255,0.06)" }}
+                    >
+                      <motion.div
+                        className="h-full rounded-full"
+                        style={{ backgroundColor: bank.color }}
+                        initial={{ width: 0 }}
+                        animate={{
+                          width:
+                            totalNGNAll > 0
+                              ? `${(bank.ngnTotal / totalNGNAll) * 100}%`
+                              : "0%",
+                        }}
+                        transition={{
+                          duration: 0.9,
+                          delay: 0.3,
+                          ease: "easeOut",
+                        }}
+                      />
+                    </div>
+                  </div>
+                </>
+              );
+              return route ? (
+                <Link key={bank.key} href={route} className={outerClass} style={outerStyle}>
+                  {content}
+                </Link>
+              ) : (
+                <div key={bank.key} className={outerClass} style={outerStyle}>
+                  {content}
                 </div>
-              </div>
-            ))}
+              );
+            })}
       </div>
-
-      {/* ── MDA Aggregated Accounts ──────────────────────────────────────── */}
-      {mdaBankTotals.length > 0 && (
-        <div className="mb-8">
-          <h2 className="text-lg font-bold text-white tracking-tight mb-4">
-            MDA Aggregated Accounts
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {mdaBankTotals.map((bank) => (
-              <div
-                key={bank.key}
-                className="rounded-2xl p-6 relative overflow-hidden"
-                style={{
-                  backgroundColor: "rgba(255,255,255,0.04)",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                }}
-              >
-                <div
-                  className="absolute top-0 right-0 w-40 h-40 rounded-full pointer-events-none"
-                  style={{
-                    backgroundColor: `${bank.color}0d`,
-                    filter: "blur(40px)",
-                    transform: "translate(30%, -30%)",
-                  }}
-                />
-
-                <div className="flex items-center gap-3 mb-5">
-                  <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: `${bank.color}18` }}
-                  >
-                    <Building2 size={16} color={bank.color} />
-                  </div>
-                  <p className="text-base font-bold text-white">{bank.label}</p>
-                </div>
-
-                <div className="mb-4">
-                  <p
-                    className="text-xs font-semibold mb-1.5 uppercase tracking-wider"
-                    style={{ color: "rgba(255,255,255,0.38)" }}
-                  >
-                    NGN Balance
-                  </p>
-                  <p className="text-lg sm:text-xl lg:text-2xl font-extrabold text-white tracking-tight">
-                    {formatNGN(bank.ngnTotal)}
-                  </p>
-                </div>
-
-                <div
-                  className="rounded-xl px-4 py-3 mb-5"
-                  style={{
-                    backgroundColor: "rgba(96,165,250,0.07)",
-                    border: "1px solid rgba(96,165,250,0.14)",
-                  }}
-                >
-                  <p
-                    className="text-xs font-semibold mb-1 uppercase tracking-wider"
-                    style={{ color: "rgba(255,255,255,0.38)" }}
-                  >
-                    USD Balance
-                  </p>
-                  <p
-                    className="text-sm sm:text-base font-extrabold"
-                    style={{ color: "#60a5fa" }}
-                  >
-                    {formatUSD(bank.usdTotal)}
-                  </p>
-                </div>
-
-                <div>
-                  <div className="flex justify-between text-xs mb-1.5">
-                    <span style={{ color: "rgba(255,255,255,0.35)" }}>
-                      Share of total NGN
-                    </span>
-                    <span className="font-bold" style={{ color: bank.color }}>
-                      {mdaTotalNGN > 0
-                        ? ((bank.ngnTotal / mdaTotalNGN) * 100).toFixed(2)
-                        : "0.00"}
-                      %
-                    </span>
-                  </div>
-                  <div
-                    className="h-1.5 rounded-full overflow-hidden"
-                    style={{ backgroundColor: "rgba(255,255,255,0.06)" }}
-                  >
-                    <motion.div
-                      className="h-full rounded-full"
-                      style={{ backgroundColor: bank.color }}
-                      initial={{ width: 0 }}
-                      animate={{
-                        width:
-                          mdaTotalNGN > 0
-                            ? `${(bank.ngnTotal / mdaTotalNGN) * 100}%`
-                            : "0%",
-                      }}
-                      transition={{
-                        duration: 0.9,
-                        delay: 0.3,
-                        ease: "easeOut",
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* ── Charts Row ───────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -676,68 +554,27 @@ export default function DashboardPage() {
                 className="text-xs mt-0.5"
                 style={{ color: "rgba(255,255,255,0.4)" }}
               >
-                {chartView === "mda" && hasMdaData
-                  ? "MDA accounts only"
-                  : "Non-MDA accounts only"}
+                Non-MDA accounts only
               </p>
             </div>
-            <div className="flex items-center gap-3">
-              {hasMdaData && (
-                <div
-                  className="flex rounded-lg overflow-hidden text-xs font-medium"
-                  style={{
-                    border: "1px solid rgba(255,255,255,0.1)",
-                  }}
+            <div className="flex items-center gap-4 text-xs">
+              {bankTotals.map((b) => (
+                <span
+                  key={b.key}
+                  className="flex items-center gap-1.5 font-medium"
+                  style={{ color: "rgba(255,255,255,0.6)" }}
                 >
-                  <button
-                    onClick={() => setChartView("nonMda")}
-                    className="px-3 py-1.5 transition-colors"
-                    style={{
-                      backgroundColor:
-                        chartView === "nonMda"
-                          ? "rgba(19,236,91,0.15)"
-                          : "transparent",
-                      color:
-                        chartView === "nonMda" ? "#13ec5b" : "rgba(255,255,255,0.5)",
-                    }}
-                  >
-                    Non-MDA
-                  </button>
-                  <button
-                    onClick={() => setChartView("mda")}
-                    className="px-3 py-1.5 transition-colors"
-                    style={{
-                      backgroundColor:
-                        chartView === "mda"
-                          ? "rgba(19,236,91,0.15)"
-                          : "transparent",
-                      color:
-                        chartView === "mda" ? "#13ec5b" : "rgba(255,255,255,0.5)",
-                    }}
-                  >
-                    MDA
-                  </button>
-                </div>
-              )}
-              <div className="flex items-center gap-4 text-xs">
-                {activeBankTotals.map((b) => (
                   <span
-                    key={b.key}
-                    className="flex items-center gap-1.5 font-medium"
-                    style={{ color: "rgba(255,255,255,0.6)" }}
-                  >
-                    <span
-                      className="w-2 h-2 rounded-sm inline-block"
-                      style={{ backgroundColor: b.color }}
-                    />
-                    {b.label}
-                  </span>
-                ))}
-              </div>
+                    className="w-2 h-2 rounded-sm inline-block"
+                    style={{ backgroundColor: b.color }}
+                  />
+                  {b.label}
+                </span>
+              ))}
             </div>
           </div>
           <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={activeBarData} barGap={4} barCategoryGap="35%">
+            <BarChart data={barData} barGap={4} barCategoryGap="35%">
               <CartesianGrid
                 vertical={false}
                 strokeDasharray="3 3"
@@ -764,7 +601,7 @@ export default function DashboardPage() {
                 cursor={{ fill: "rgba(255,255,255,0.03)" }}
               />
               <Bar dataKey="balance" name="NGN Balance" radius={[6, 6, 0, 0]}>
-                {activeBarData.map((entry, i) => (
+                {barData.map((entry, i) => (
                   <Cell key={i} fill={entry.color} />
                 ))}
               </Bar>
@@ -784,63 +621,22 @@ export default function DashboardPage() {
             border: "1px solid rgba(255,255,255,0.08)",
           }}
         >
-          <div className="flex items-start justify-between mb-1">
-            <div>
-              <h3 className="text-white font-bold text-base">
-                Portfolio Distribution
-              </h3>
-              <p
-                className="text-xs"
-                style={{ color: "rgba(255,255,255,0.4)" }}
-              >
-                {chartView === "mda" && hasMdaData
-                  ? "MDA NGN balance share"
-                  : "Non-MDA NGN balance share"}
-              </p>
-            </div>
-            {hasMdaData && (
-              <div
-                className="flex rounded-lg overflow-hidden text-xs font-medium"
-                style={{
-                  border: "1px solid rgba(255,255,255,0.1)",
-                }}
-              >
-                <button
-                  onClick={() => setChartView("nonMda")}
-                  className="px-3 py-1.5 transition-colors"
-                  style={{
-                    backgroundColor:
-                      chartView === "nonMda"
-                        ? "rgba(19,236,91,0.15)"
-                        : "transparent",
-                    color:
-                      chartView === "nonMda" ? "#13ec5b" : "rgba(255,255,255,0.5)",
-                  }}
-                >
-                  Non-MDA
-                </button>
-                <button
-                  onClick={() => setChartView("mda")}
-                  className="px-3 py-1.5 transition-colors"
-                  style={{
-                    backgroundColor:
-                      chartView === "mda"
-                        ? "rgba(19,236,91,0.15)"
-                        : "transparent",
-                    color:
-                      chartView === "mda" ? "#13ec5b" : "rgba(255,255,255,0.5)",
-                  }}
-                >
-                  MDA
-                </button>
-              </div>
-            )}
+          <div className="mb-1">
+            <h3 className="text-white font-bold text-base">
+              Portfolio Distribution
+            </h3>
+            <p
+              className="text-xs"
+              style={{ color: "rgba(255,255,255,0.4)" }}
+            >
+              Non-MDA NGN balance share
+            </p>
           </div>
 
           <ResponsiveContainer width="100%" height={190}>
             <PieChart>
               <Pie
-                data={activePieData}
+                data={pieData}
                 cx="50%"
                 cy="50%"
                 innerRadius={55}
@@ -848,7 +644,7 @@ export default function DashboardPage() {
                 paddingAngle={3}
                 dataKey="value"
               >
-                {activePieData.map((entry, i) => (
+                {pieData.map((entry, i) => (
                   <Cell key={i} fill={entry.color} stroke="transparent" />
                 ))}
               </Pie>
@@ -857,7 +653,7 @@ export default function DashboardPage() {
           </ResponsiveContainer>
 
           <div className="space-y-3 mt-auto">
-            {activePieData.map((entry) => (
+            {pieData.map((entry) => (
               <div key={entry.name}>
                 <div className="flex items-center justify-between text-xs mb-1.5">
                   <div className="flex items-center gap-2 min-w-0">
@@ -883,8 +679,8 @@ export default function DashboardPage() {
                     initial={{ width: 0 }}
                     animate={{
                       width:
-                        activeTotalNGN > 0
-                          ? `${(entry.value / activeTotalNGN) * 100}%`
+                        totalNGNAll > 0
+                          ? `${(entry.value / totalNGNAll) * 100}%`
                           : "0%",
                     }}
                     transition={{ duration: 0.9, delay: 0.4, ease: "easeOut" }}
