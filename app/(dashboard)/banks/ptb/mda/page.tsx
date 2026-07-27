@@ -152,10 +152,10 @@ export default function PtbMdaPage() {
                         setActiveBank(acc.accountNumber);
                         const params = new URLSearchParams();
                         params.set("totalAccounts", String(totalResults));
-                        Object.entries(currencyTotals).forEach(([cur, { current, available }]) => {
-                          params.set(`${cur}_cur`, String(current));
-                          params.set(`${cur}_avail`, String(available));
-                        });
+                        // Object.entries(currencyTotals).forEach(([cur, { current, available }]) => {
+                        //   params.set(`${cur}_cur`, String(current));
+                        //   params.set(`${cur}_avail`, String(available));
+                        // });
                         router.push(`/transactions?${params}`);
                       }}
                     >
