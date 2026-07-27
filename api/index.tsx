@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { privateApi, publicApi } from "./axios"
-
+import { privateApi, publicApi } from "./axios";
 
 export const login = async (data: any) => {
   const res = await publicApi.post("/auth/login/2fa/initialize", data);
@@ -17,23 +16,8 @@ export async function aggregatedBalances() {
 }
 
 // fetchZenithAggregatedBalance
-export const fetchZenithAggregatedBalance = async (params: {
-     search?: string;
-    start?: string;
-    end?: string;
-    account_number?: string;
-    mode?: string;
-    ordering?: string;
-    size?: number;
-    page?: number;
-  } = {}) => {
-  const res = await privateApi.get("/integrations/zenith-accounts", {
-    params: params
-  });
-  return res.data;
-}
-
-  export const fetchZenithStatements = async (params: {
+export const fetchZenithAggregatedBalance = async (
+  params: {
     search?: string;
     start?: string;
     end?: string;
@@ -42,16 +26,37 @@ export const fetchZenithAggregatedBalance = async (params: {
     ordering?: string;
     size?: number;
     page?: number;
-  } = {}) => {
-    const res = await privateApi.get("/integrations/zenith-accounts-statement", {
-      params: params
-    });
-    return res.data;
+    is_mda_account?: boolean;
+  } = {},
+) => {
+  const res = await privateApi.get("/integrations/zenith-accounts", {
+    params: params,
+  });
+  return res.data;
 };
-  
+
+export const fetchZenithStatements = async (
+  params: {
+    search?: string;
+    start?: string;
+    end?: string;
+    account_number?: string;
+    mode?: string;
+    ordering?: string;
+    size?: number;
+    page?: number;
+  } = {},
+) => {
+  const res = await privateApi.get("/integrations/zenith-accounts-statement", {
+    params: params,
+  });
+  return res.data;
+};
+
 // fetchUbaAggregatedBalance
-export const fetchUbaAggregatedBalance = async (params: {
-     search?: string;
+export const fetchUbaAggregatedBalance = async (
+  params: {
+    search?: string;
     start?: string;
     end?: string;
     account_number?: string;
@@ -59,30 +64,18 @@ export const fetchUbaAggregatedBalance = async (params: {
     ordering?: string;
     size?: number;
     page?: number;
-  } = {}) => {
-  const res = await privateApi.get("/integrations/uba-accounts");
+    is_mda_account?: boolean;
+  } = {},
+) => {
+  const res = await privateApi.get("/integrations/uba-accounts", {
+    params: params,
+  });
   return res.data;
-}
-
-  export const fetchUbaStatements = async (params: {
-     search?: string;
-    start?: string;
-    end?: string;
-    account_number?: string;
-    mode?: string;
-    ordering?: string;
-    size?: number;
-    page?: number;
-  } = {}) => {
-    const res = await privateApi.get("/integrations/uba-accounts-statement", {
-      params: params
-    });
-    return res.data;
 };
-  
-// fetchPtbAggregatedBalance
-export const fetchPtbAggregatedBalance = async (params: {
-     search?: string;
+
+export const fetchUbaStatements = async (
+  params: {
+    search?: string;
     start?: string;
     end?: string;
     account_number?: string;
@@ -90,13 +83,18 @@ export const fetchPtbAggregatedBalance = async (params: {
     ordering?: string;
     size?: number;
     page?: number;
-  } = {}) => {
-  const res = await privateApi.get("/integrations/ptb-accounts");
+  } = {},
+) => {
+  const res = await privateApi.get("/integrations/uba-accounts-statement", {
+    params: params,
+  });
   return res.data;
-}
+};
 
-  export const fetchPtbStatements = async (params: {
-     search?: string;
+// fetchPtbAggregatedBalance
+export const fetchPtbAggregatedBalance = async (
+  params: {
+    search?: string;
     start?: string;
     end?: string;
     account_number?: string;
@@ -104,10 +102,29 @@ export const fetchPtbAggregatedBalance = async (params: {
     ordering?: string;
     size?: number;
     page?: number;
-  } = {}) => {
-    const res = await privateApi.get("/integrations/ptb-accounts-statement", {
-      params: params
-    });
-    return res.data;
-  };
+    is_mda_account?: boolean;
+    } = {},
+) => {
+  const res = await privateApi.get("/integrations/ptb-accounts", {
+    params: params,
+  });
+  return res.data;
+};
 
+export const fetchPtbStatements = async (
+  params: {
+    search?: string;
+    start?: string;
+    end?: string;
+    account_number?: string;
+    mode?: string;
+    ordering?: string;
+    size?: number;
+    page?: number;
+  } = {},
+) => {
+  const res = await privateApi.get("/integrations/ptb-accounts-statement", {
+    params: params,
+  });
+  return res.data;
+};

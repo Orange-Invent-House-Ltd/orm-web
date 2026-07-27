@@ -236,7 +236,10 @@ export default function DashboardPage() {
     : "—";
 
   return (
-    <div className="p-4 sm:p-8 min-h-screen" style={{ backgroundColor: "#0d1a11" }}>
+    <div
+      className="p-4 sm:p-8 min-h-screen"
+      style={{ backgroundColor: "#0d1a11" }}
+    >
       {/* ── Page Header ──────────────────────────────────────────────────── */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -265,7 +268,7 @@ export default function DashboardPage() {
               color: "#f59e0b",
             }}
           >
-            MDA Accounts
+            MDA Accounts Overview
             <ArrowRight size={14} />
           </Link>
           <div className="text-right">
@@ -420,7 +423,8 @@ export default function DashboardPage() {
             ))
           : bankTotals.map((bank) => {
               const route = BANK_ROUTES[bank.key];
-              const outerClass = "rounded-2xl p-6 relative overflow-hidden transition-all hover:opacity-85";
+              const outerClass =
+                "rounded-2xl p-6 relative overflow-hidden transition-all hover:opacity-85";
               const outerStyle = {
                 backgroundColor: "rgba(255,255,255,0.04)",
                 border: "1px solid rgba(255,255,255,0.08)",
@@ -444,7 +448,9 @@ export default function DashboardPage() {
                     >
                       <Building2 size={16} color={bank.color} />
                     </div>
-                    <p className="text-base font-bold text-white">{bank.label}</p>
+                    <p className="text-base font-bold text-white">
+                      {bank.label}
+                    </p>
                   </div>
 
                   {/* NGN balance */}
@@ -520,7 +526,12 @@ export default function DashboardPage() {
                 </>
               );
               return route ? (
-                <Link key={bank.key} href={route} className={outerClass} style={outerStyle}>
+                <Link
+                  key={bank.key}
+                  href={route}
+                  className={outerClass}
+                  style={outerStyle}
+                >
                   {content}
                 </Link>
               ) : (
@@ -625,10 +636,7 @@ export default function DashboardPage() {
             <h3 className="text-white font-bold text-base">
               Portfolio Distribution
             </h3>
-            <p
-              className="text-xs"
-              style={{ color: "rgba(255,255,255,0.4)" }}
-            >
+            <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
               Non-MDA NGN balance share
             </p>
           </div>

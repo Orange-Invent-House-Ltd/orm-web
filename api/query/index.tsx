@@ -1,18 +1,26 @@
 import { useQuery, UseQueryOptions } from "@tanstack/react-query";
-import { aggregatedBalances, fetchPtbAggregatedBalance, fetchPtbStatements, fetchUbaAggregatedBalance, fetchUbaStatements, fetchZenithAggregatedBalance, fetchZenithStatements, } from "..";
+import {
+  aggregatedBalances,
+  fetchPtbAggregatedBalance,
+  fetchPtbStatements,
+  fetchUbaAggregatedBalance,
+  fetchUbaStatements,
+  fetchZenithAggregatedBalance,
+  fetchZenithStatements,
+} from "..";
 
 type StatementParams = {
-   search?: string;
-    start?: string;
-    end?: string;
-    account_number?: string;
-    mode?: string;
-    ordering?: string;
-    size?: number;
-    page?: number;
-}
-// 
-type ExtraOptions = Omit<UseQueryOptions, 'queryKey' | 'queryFn'>
+  search?: string;
+  start?: string;
+  end?: string;
+  account_number?: string;
+  mode?: string;
+  ordering?: string;
+  size?: number;
+  page?: number;
+};
+//
+type ExtraOptions = Omit<UseQueryOptions, "queryKey" | "queryFn">;
 // use agreegated balance
 
 export function useAggregatedBalances() {
@@ -22,24 +30,20 @@ export function useAggregatedBalances() {
   });
 }
 
-
-
-export const useFetchZenithAggregatedBalance = (
-  params?: {
+export const useFetchZenithAggregatedBalance = (params?: {
   search?: string;
   start?: string;
   end?: string;
   account_number?: string;
   size?: number;
   page?: number;
-}
-) => {
+  is_mda_account?: boolean;
+}) => {
   return useQuery({
     queryFn: () => fetchZenithAggregatedBalance(params),
     queryKey: ["zenithAggregatedBalance", params],
   });
-}
-
+};
 
 // use agreegated balance
 export const useFetchUbaAggregatedBalance = (params?: {
@@ -49,63 +53,59 @@ export const useFetchUbaAggregatedBalance = (params?: {
   account_number?: string;
   size?: number;
   page?: number;
+  is_mda_account?: boolean;
 }) => {
   return useQuery({
     queryFn: () => fetchUbaAggregatedBalance(params),
     queryKey: ["ubaAggregatedBalance", params],
   });
-}
-
+};
 
 // use agreegated balance
-export const useFetchPtbAggregatedBalance = (
-  params?: {
+export const useFetchPtbAggregatedBalance = (params?: {
   search?: string;
   start?: string;
   end?: string;
   account_number?: string;
   size?: number;
   page?: number;
-}
-) => {
+  is_mda_account?: boolean;
+}) => {
   return useQuery({
     queryFn: () => fetchPtbAggregatedBalance(params),
     queryKey: ["ptbAggregatedBalance", params],
   });
-}
-
-
-
+};
 
 export const useFetchZenithStatements = (
   params?: StatementParams,
-  options?: ExtraOptions
+  options?: ExtraOptions,
 ) => {
   return useQuery({
     queryFn: () => fetchZenithStatements(params),
-    queryKey: ['zenithStatements', params],
-    ...options,   // ← spreads in `enabled`, `staleTime`, etc.
-  })
-}
+    queryKey: ["zenithStatements", params],
+    ...options, // ← spreads in `enabled`, `staleTime`, etc.
+  });
+};
 
 export const useFetchUbaStatements = (
   params?: StatementParams,
-  options?: ExtraOptions
+  options?: ExtraOptions,
 ) => {
   return useQuery({
     queryFn: () => fetchUbaStatements(params),
-    queryKey: ['ubaStatements', params],
+    queryKey: ["ubaStatements", params],
     ...options,
-  })
-}
+  });
+};
 
 export const useFetchPtbStatements = (
   params?: StatementParams,
-  options?: ExtraOptions
+  options?: ExtraOptions,
 ) => {
   return useQuery({
     queryFn: () => fetchPtbStatements(params),
-    queryKey: ['ptbStatements', params],
+    queryKey: ["ptbStatements", params],
     ...options,
-  })
-}
+  });
+};

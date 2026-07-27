@@ -35,18 +35,15 @@ export default function UbaBankPage() {
   const [page, setPage] = useState(1);
   const [size, setSize] = useState(6);
   const [search, setSearch] = useState("");
-  const [searchInput, setSearchInput] = useState("");
 
   const {
     data: uba,
     isLoading,
     error,
     refetch,
-  } = useFetchUbaAggregatedBalance({ page, size, search });
+  } = useFetchUbaAggregatedBalance({ page, size, search, is_mda_account: false });
 
   const accounts = uba?.data ?? [];
-  const nonMdaAccounts = accounts.filter((a: any) => !a.isMdaAccount);
-  const mdaAccounts = accounts.filter((a: any) => a.isMdaAccount);
   const statsRef = useRef<HTMLDivElement>(null);
 
   /* Aggregate totals per currency */
@@ -130,17 +127,30 @@ export default function UbaBankPage() {
               </p>
             </div>
           </div>
-          <button
-            className="sm:w-fit w-full flex items-center justify-center gap-2 px-4 py-2 mt-2 rounded-xl text-sm font-bold transition-all hover:opacity-80"
-            style={{
-              backgroundColor: "#13ec5b15",
-              color: "#13ec5b",
-              border: "1px solid #13ec5b33",
-            }}
-            onClick={() => refetch()}
-          >
-            <RefreshCw size={15} className="cursor-pointer" /> Refresh All
-          </button>
+          <div className="flex items-center gap-2 flex-wrap mt-2">
+            <Link
+              href="/banks/uba/mda"
+              className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all hover:opacity-80"
+              style={{
+                backgroundColor: "rgba(245,158,11,0.12)",
+                border: "1px solid rgba(245,158,11,0.25)",
+                color: "#f59e0b",
+              }}
+            >
+              View MDA Accounts
+            </Link>
+            <button
+              className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all hover:opacity-80"
+              style={{
+                backgroundColor: "#13ec5b15",
+                color: "#13ec5b",
+                border: "1px solid #13ec5b33",
+              }}
+              onClick={() => refetch()}
+            >
+              <RefreshCw size={15} className="cursor-pointer" /> Refresh All
+            </button>
+          </div>
         </div>
       </motion.div>
 
@@ -284,13 +294,13 @@ export default function UbaBankPage() {
       )}
 
       {/* Non-MDA Accounts */}
-      {!isLoading && nonMdaAccounts.length > 0 && (
+      {!isLoading && accounts.length > 0 && (
         <>
           <h2 className="text-lg font-bold text-white tracking-tight mb-4">
             Non-MDA Accounts
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
-            {nonMdaAccounts.map((acc: any, i: number) => {
+            {accounts.map((acc: any, i: number) => {
               const isActive: boolean = acc.isActive;
               const currencyCfg =
                 CURRENCY_CONFIG[acc.currency as keyof typeof CURRENCY_CONFIG];
@@ -480,156 +490,6 @@ export default function UbaBankPage() {
             })}
           </div>
         </>
-      )}
-
-      {/* MDA Accounts */}
-      {!isLoading && mdaAccounts.length > 0 && (
-        <div className="mb-8" id="mda">
-          <h2 className="text-lg font-bold text-white tracking-tight mb-4">
-            MDA Accounts
-          </h2>
-          <div
-            className="rounded-2xl overflow-x-auto"
-            style={{ border: "1px solid rgba(255,255,255,0.08)" }}
-          >
-            <table className="w-full text-sm">
-              <thead>
-                <tr style={{ backgroundColor: "rgba(255,255,255,0.04)" }}>
-                  <th
-                    className="text-left px-4 py-3 text-[10px] font-bold uppercase tracking-widest"
-                    style={{ color: "rgba(255,255,255,0.4)" }}
-                  >
-                    Account Name
-                  </th>
-                  <th
-                    className="text-left px-4 py-3 text-[10px] font-bold uppercase tracking-widest"
-                    style={{ color: "rgba(255,255,255,0.4)" }}
-                  >
-                    Account No
-                  </th>
-                  <th
-                    className="text-left px-4 py-3 text-[10px] font-bold uppercase tracking-widest"
-                    style={{ color: "rgba(255,255,255,0.4)" }}
-                  >
-                    Currency
-                  </th>
-                  <th
-                    className="text-right px-4 py-3 text-[10px] font-bold uppercase tracking-widest"
-                    style={{ color: "rgba(255,255,255,0.4)" }}
-                  >
-                    Current Balance
-                  </th>
-                  <th
-                    className="text-right px-4 py-3 text-[10px] font-bold uppercase tracking-widest"
-                    style={{ color: "rgba(255,255,255,0.4)" }}
-                  >
-                    Available Balance
-                  </th>
-                  <th
-                    className="text-center px-4 py-3 text-[10px] font-bold uppercase tracking-widest"
-                    style={{ color: "rgba(255,255,255,0.4)" }}
-                  >
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {mdaAccounts.map((acc: any, i: number) => {
-                  const currencyCfg =
-                    CURRENCY_CONFIG[
-                      acc.currency as keyof typeof CURRENCY_CONFIG
-                    ];
-                  const accentColor = currencyCfg?.color ?? "#13ec5b";
-                  const isActive = acc.isActive;
-                  return (
-                    <Link
-                      key={acc.accountNumber ?? i}
-                      href="/transactions"
-                      onClick={() => {
-                        localStorage.setItem("bankName", "uba");
-                        setActiveBank(acc.accountNumber);
-                      }}
-                    >
-                      <tr
-                        className="cursor-pointer transition-colors hover:opacity-80"
-                        style={{
-                          borderTop: "1px solid rgba(255,255,255,0.05)",
-                        }}
-                      >
-                        <td className="px-4 py-3">
-                          <p className="font-bold text-white text-xs">
-                            {acc.accountName}
-                          </p>
-                          {acc.lastUpdateMessage && (
-                            <p
-                              className="text-[10px] mt-0.5"
-                              style={{ color: "rgba(255,100,100,0.65)" }}
-                            >
-                              {acc.lastUpdateMessage}
-                            </p>
-                          )}
-                        </td>
-                        <td className="px-4 py-3">
-                          <span
-                            className="font-mono text-xs"
-                            style={{ color: "rgba(255,255,255,0.6)" }}
-                          >
-                            {acc.accountNumber}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          <span
-                            className="text-xs font-bold px-2 py-0.5 rounded"
-                            style={{
-                              backgroundColor: `${accentColor}18`,
-                              color: accentColor,
-                            }}
-                          >
-                            {acc.currency}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <span className="font-bold text-white text-xs">
-                            {formatBalance(acc.currentBalance, acc.currency)}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <span
-                            className="font-bold text-xs"
-                            style={{ color: accentColor }}
-                          >
-                            {formatBalance(acc.availableBalance, acc.currency)}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <div className="flex items-center justify-center gap-1.5">
-                            <span
-                              className="w-1.5 h-1.5 rounded-full"
-                              style={{
-                                backgroundColor: isActive
-                                  ? "#13ec5b"
-                                  : "#94a3b8",
-                                display: "inline-block",
-                              }}
-                            />
-                            <span
-                              className="text-[10px] font-bold"
-                              style={{
-                                color: isActive ? "#13ec5b" : "#94a3b8",
-                              }}
-                            >
-                              {isActive ? "Active" : "Inactive"}
-                            </span>
-                          </div>
-                        </td>
-                      </tr>
-                    </Link>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
       )}
 
       {uba?.meta?.totalResults > accounts.length && (
