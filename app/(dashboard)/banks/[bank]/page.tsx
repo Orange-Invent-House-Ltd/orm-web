@@ -5,7 +5,8 @@ import { gsap } from "gsap";
 import { useEffect, useRef, useState } from "react";
 import { RefreshCw, TrendingUp, XCircle } from "lucide-react";
 import Link from "next/link";
-import { useFetchZenithAggregatedBalance } from "@/api/query";
+import { useParams } from "next/navigation";
+import { useFetchInstitutionAccounts } from "@/api/query";
 import { useFinanceStore } from "@/store/financeStore";
 
 const CURRENCY_CONFIG = {
@@ -26,30 +27,37 @@ function formatBalance(amount: string | number, currency: string): string {
   })}`;
 }
 
-export default function ZenithBankPage() {
+function formatBankName(name: string): string {
+  const map: Record<string, string> = {
+    ZENITH: "Zenith Bank",
+    UBA: "UBA",
+    PREMIUMTRUST: "Premium Trust Bank",
+  };
+  return map[name] ?? name.charAt(0) + name.slice(1).toLowerCase();
+}
+
+export default function BankPage() {
+  const params = useParams();
+  const bank = (params.bank as string)?.toUpperCase();
   const { setActiveBank } = useFinanceStore();
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(1);  
   const [size, setSize] = useState(6);
   const [search, setSearch] = useState("");
-  const [searchInput, setSearchInput] = useState("");
 
   const {
-    data: zenith,
+    data: response,
     isLoading,
     error,
     refetch,
-  } = useFetchZenithAggregatedBalance({ page, size, search, is_mda_account: false });
+  } = useFetchInstitutionAccounts({ bank_name: bank, is_mda_account: false, page, size, search }) as { data: any; isLoading: boolean; error: any; refetch: () => void };
 
-  const accounts = zenith?.data || [];
+  const accounts = response?.data || [];
   const statsRef = useRef<HTMLDivElement>(null);
 
-  /* Aggregate totals per currency */
   const aggregatedBalance = accounts.reduce(
     (acc: any, account: any) => {
       const currency = account.currency;
-      const config = CURRENCY_CONFIG[
-        currency as keyof typeof CURRENCY_CONFIG
-      ] ?? {
+      const config = CURRENCY_CONFIG[currency as keyof typeof CURRENCY_CONFIG] ?? {
         color: "#6b7280",
         icon: currency.charAt(0),
         bg: "#6b728015",
@@ -62,12 +70,8 @@ export default function ZenithBankPage() {
           ...config,
         };
       }
-      acc[currency].total_currency_balance += parseFloat(
-        account.currentBalance,
-      );
-      acc[currency].total_available_balance += parseFloat(
-        account.availableBalance,
-      );
+      acc[currency].total_currency_balance += parseFloat(account.currentBalance);
+      acc[currency].total_available_balance += parseFloat(account.availableBalance);
       acc[currency].accountCount += 1;
       return acc;
     },
@@ -84,10 +88,10 @@ export default function ZenithBankPage() {
     );
   }, [accounts.length]);
 
-  const bankName = accounts[0]?.bankName ?? "Zenith Bank";
+  const displayName = accounts[0]?.bankName ?? formatBankName(bank);
 
   return (
-    <div className="md:p-8 p-3 " style={{ backgroundColor: "#0d1a11" }}>
+    <div className="md:p-8 p-3" style={{ backgroundColor: "#0d1a11" }}>
       {/* Breadcrumb + title */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -101,9 +105,9 @@ export default function ZenithBankPage() {
         >
           <span>Institutions</span>
           <span>/</span>
-          <span style={{ color: "#13ec5b" }}>{bankName}</span>
+          <span style={{ color: "#13ec5b" }}>{displayName}</span>
         </div>
-        <div className="flex  md:flex-row flex-col md:items-center items-start justify-between">
+        <div className="flex md:flex-row flex-col md:items-center items-start justify-between">
           <div className="flex items-center gap-3">
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center text-base font-black"
@@ -113,14 +117,11 @@ export default function ZenithBankPage() {
                 border: "1px solid #13ec5b44",
               }}
             >
-              {bankName.charAt(0)}
+              {displayName.charAt(0)}
             </div>
             <div>
-              <h1
-                className="text-2xl font-bold text-white tracking-tight truncate
-    "
-              >
-                {bankName}
+              <h1 className="text-2xl font-bold text-white tracking-tight truncate">
+                {displayName}
               </h1>
               <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
                 Manage Accounts
@@ -128,8 +129,8 @@ export default function ZenithBankPage() {
             </div>
           </div>
           <div className="flex items-center gap-2 flex-wrap mt-2">
-            <Link
-              href="/banks/zenith/mda"
+            {/* <Link
+              href="/mda"
               className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all hover:opacity-80"
               style={{
                 backgroundColor: "rgba(245,158,11,0.12)",
@@ -138,7 +139,7 @@ export default function ZenithBankPage() {
               }}
             >
               View MDA Accounts
-            </Link>
+            </Link> */}
             <button
               className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all hover:opacity-80"
               style={{
@@ -185,7 +186,7 @@ export default function ZenithBankPage() {
                       Total {currency}
                     </p>
                     <p
-                      className="text-xl font-bold text-white "
+                      className="text-xl font-bold text-white"
                       title={data.total_currency_balance}
                     >
                       {formatBalance(data.total_currency_balance, currency)}
@@ -194,7 +195,6 @@ export default function ZenithBankPage() {
                 </div>
                 <TrendingUp size={16} style={{ color: data.color }} />
               </div>
-              {/* Available total */}
               <div
                 className="rounded-xl px-3 py-2.5"
                 style={{
@@ -240,29 +240,14 @@ export default function ZenithBankPage() {
         </button>
 
         <motion.div className="flex items-center gap-2">
-          {zenith?.meta?.totalResults > accounts.length && (
+          {response?.meta?.totalResults > accounts.length && (
             <button
               className="text-sm font-bold text-white/70 hover:opacity-80 mr-6 underline"
-              onClick={() => setSize(zenith?.meta?.totalResults)}
+              onClick={() => setSize(response?.meta?.totalResults)}
             >
               See All
             </button>
           )}
-          {/* <input
-            type="text"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && setSearch(searchInput)}
-            className="bg-transparent border border-white/10 rounded-lg px-3 py-1.5 text-sm w-48 focus:outline-none focus:ring-1 focus:ring-white/20 text-white"
-            placeholder="Search accounts..."
-          />
-          <motion.button
-            onClick={() => setSearch(searchInput)}
-            className="px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-sm text-white transition-colors border border-white/10"
-            whileTap={{ scale: 0.95 }}
-          >
-           Search
-           </motion.button> */}
         </motion.div>
       </div>
 
@@ -293,10 +278,9 @@ export default function ZenithBankPage() {
         </div>
       )}
 
-      {/* Non-MDA Accounts */}
+      {/* Accounts */}
       {!isLoading && accounts.length > 0 && (
-        <section className="mb-8" id="mda">
-         
+        <section className="mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
             {accounts.map((acc: any, i: number) => {
               const isActive: boolean = acc.isActive;
@@ -315,14 +299,10 @@ export default function ZenithBankPage() {
               return (
                 <Link
                   key={acc.accountNumber ?? i}
-                  href="/transactions"
-                  onClick={() => {
-                    localStorage.setItem("bankName", "zenith");
-                    setActiveBank(acc.accountNumber);
-                  }}
+                  href={`/transactions?bank_name=${bank}&account_number=${acc.accountNumber}`}
+                  onClick={() => setActiveBank(acc.accountNumber)}
                 >
                   <motion.div
-                    key={acc.accountNumber ?? i}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 + i * 0.08, duration: 0.45 }}
@@ -355,7 +335,6 @@ export default function ZenithBankPage() {
                         </div>
                       </div>
                       <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                        {/* Currency tag */}
                         <div
                           className="rounded-lg px-2 py-1 text-xs font-bold"
                           style={{
@@ -365,7 +344,6 @@ export default function ZenithBankPage() {
                         >
                           {acc.currency}
                         </div>
-                        {/* isActive badge */}
                         <span
                           className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full flex items-center gap-1"
                           style={{
@@ -388,7 +366,7 @@ export default function ZenithBankPage() {
                       </div>
                     </div>
 
-                    {/* ── Current Balance ── */}
+                    {/* Current Balance */}
                     <div className="mb-3">
                       <p
                         className="text-[10px] font-bold uppercase tracking-widest mb-1"
@@ -404,7 +382,7 @@ export default function ZenithBankPage() {
                       </p>
                     </div>
 
-                    {/* ── Available Balance ── */}
+                    {/* Available Balance */}
                     <div
                       className="rounded-xl px-3 py-2.5 mb-4"
                       style={{
@@ -433,7 +411,6 @@ export default function ZenithBankPage() {
                       style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
                     >
                       <div className="flex items-center justify-between mb-2">
-                        {/* Sync status */}
                         <div className="flex items-center gap-1.5">
                           <span
                             className="w-1.5 h-1.5 rounded-full"
@@ -457,7 +434,6 @@ export default function ZenithBankPage() {
                                 : "Sync Failed"}
                           </span>
                         </div>
-                        {/* Balance as-of timestamp */}
                         {balanceAsOf && (
                           <span
                             className="text-[10px]"
@@ -467,13 +443,6 @@ export default function ZenithBankPage() {
                           </span>
                         )}
                       </div>
-
-                      {/* Optional error message
-                  {acc.lastUpdateMessage && (
-                    <p className="text-[10px] mb-2" style={{ color: 'rgba(255,100,100,0.65)' }}>
-                      {acc.lastUpdateMessage}
-                    </p>
-                  )} */}
 
                       <button
                         className="text-[10px] font-bold uppercase tracking-widest transition-opacity hover:opacity-60"
@@ -490,7 +459,7 @@ export default function ZenithBankPage() {
         </section>
       )}
 
-      {zenith?.meta?.totalResults > accounts.length && (
+      {response?.meta?.totalResults > accounts.length && (
         <motion.button
           className="mt-4 w-fit flex items-center justify-center mx-auto p-4 mb-16 bg-white/10 rounded-lg text-white font-bold text-sm"
           whileTap={{ scale: 0.98 }}

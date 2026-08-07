@@ -542,7 +542,7 @@ export default function MDADashboardPage() {
               </div>
             );
             return route ? (
-              <Link key={bank.key} href={`${route}/mda`} className="block transition-all hover:opacity-85">
+              <Link key={bank.key} href={`${route}/mda?bank=${bank.label.toUpperCase}`} className="block transition-all hover:opacity-85">
                 {card}
               </Link>
             ) : (

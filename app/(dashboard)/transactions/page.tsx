@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Download,
@@ -11,18 +11,13 @@ import {
   Activity,
   Layers,
 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { useFinanceStore } from "@/store/financeStore";
 import TransactionDetail from "@/components/transactions/TransactionDetail";
 import Pagination from "@/components/reuseable/Pagination";
-import {
-  useFetchUbaStatements,
-  useFetchZenithStatements,
-  useFetchPtbStatements,
-} from "@/api/query";
-import BankSelectionModal from "@/components/ChooseBank";
+import { useFetchInstitutionAccountStatements } from "@/api/query";
 import { CSVLink } from "react-csv";
 
-// ─── types ────────────────────────────────────────────────────────────────────
 export interface StatementTransaction {
   id: string;
   ptid: string;
@@ -42,7 +37,6 @@ export interface StatementTransaction {
   Currency: string;
 }
 
-// ─── helpers ──────────────────────────────────────────────────────────────────
 function formatCurrency(amount: string | number, currency = "NGN") {
   const num = typeof amount === "string" ? parseFloat(amount) : amount;
   return new Intl.NumberFormat("en-NG", {
@@ -57,7 +51,6 @@ function modeColor(mode: string) {
   return mode === "CREDIT" ? "#13ec5b" : "#ef4444";
 }
 
-// ─── CSV column definitions ───────────────────────────────────────────────────
 const CSV_HEADERS = [
   { label: "Transaction ID", key: "id" },
   { label: "PTID", key: "ptid" },
@@ -77,120 +70,70 @@ const CSV_HEADERS = [
   { label: "Currency", key: "Currency" },
 ];
 
-// ─── component ────────────────────────────────────────────────────────────────
 export default function TransactionsPage() {
-  const { setSelectedTransaction, activeBank, setActiveBank } =
-    useFinanceStore();
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#0d1a11" }}>
+          <p style={{ color: "rgba(255,255,255,0.4)" }}>Loading...</p>
+        </div>
+      }
+    >
+      <TransactionsContent />
+    </Suspense>
+  );
+}
+
+function TransactionsContent() {
+  const searchParams = useSearchParams();
+  const bankName = searchParams.get("bank_name")?.toUpperCase() ?? "";
+  const accountNumberParam = searchParams.get("account_number") ?? "";
+
+  const { setSelectedTransaction, setActiveBank } = useFinanceStore();
 
   const [apiSearch, setApiSearch] = useState("");
   const [inputValue, setInputValue] = useState("");
-  const [accountNumber, setAccountNumber] = useState(activeBank ?? "");
-  const [accountNumberInput, setAccountNumberInput] = useState(
-    activeBank ?? "",
-  );
-  const [modeFilter, setModeFilter] = useState<"all" | "CREDIT" | "DEBIT">(
-    "all",
-  );
+  const [accountNumber, setAccountNumber] = useState(accountNumberParam);
+  const [accountNumberInput, setAccountNumberInput] = useState(accountNumberParam);
+  const [modeFilter, setModeFilter] = useState<"all" | "CREDIT" | "DEBIT">("all");
   const [page, setPage] = useState(1);
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
-  const [showModal, setShowModal] = useState(!activeBank);
-  const [bankName, setBankName] = useState("");
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const storedBank = localStorage.getItem("bankName");
-      if (storedBank) setBankName(storedBank.replace(/"/g, ""));
-    }
-  }, []);
+    setAccountNumber(accountNumberParam);
+    setAccountNumberInput(accountNumberParam);
+  }, [accountNumberParam]);
 
   const modeParam =
     modeFilter === "CREDIT" ? "C" : modeFilter === "DEBIT" ? "D" : undefined;
 
   const getOrderingParam = () => {
     const prefix = sortOrder === "desc" ? "-" : "";
-    if (bankName === "zenith") return `${prefix}TransDate`;
-    if (bankName === "uba") return `${prefix}tran_date`;
-    if (bankName === "ptb") return `${prefix}date`;
+    if (bankName === "ZENITH") return `${prefix}TransDate`;
+    if (bankName === "UBA") return `${prefix}tran_date`;
+    if (bankName === "PREMIUMTRUST") return `${prefix}date`;
     return undefined;
   };
   const orderingParam = getOrderingParam();
 
-  const { data: zenithData, isLoading: zenithLoading } =
-    useFetchZenithStatements(
-      {
-        size: 100,
-        page,
-        search: apiSearch,
-        mode: modeParam,
-        ordering: orderingParam,
-        account_number: accountNumber,
-      },
-      { enabled: bankName === "zenith" },
-    );
-  const { data: ubaData, isLoading: ubaLoading } = useFetchUbaStatements(
+  const { data: fetchStatement, isLoading } = useFetchInstitutionAccountStatements(
     {
+      bank_name: bankName || undefined,
+      account_number: accountNumber || undefined,
       size: 100,
       page,
       search: apiSearch,
       mode: modeParam,
       ordering: orderingParam,
-      account_number: accountNumber,
     },
-    { enabled: bankName === "uba" },
-  );
-  const { data: ptbData, isLoading: ptbLoading } = useFetchPtbStatements(
-    {
-      size: 100,
-      page,
-      search: apiSearch,
-      mode: modeParam,
-      ordering: orderingParam,
-      account_number: accountNumber,
-    },
-    { enabled: bankName === "ptb" },
-  );
-
-  const fetchStatement: any =
-    bankName === "zenith"
-      ? zenithData
-      : bankName === "uba"
-        ? ubaData
-        : bankName === "ptb"
-          ? ptbData
-          : undefined;
-
-  const isLoading =
-    bankName === "zenith"
-      ? zenithLoading
-      : bankName === "uba"
-        ? ubaLoading
-        : bankName === "ptb"
-          ? ptbLoading
-          : false;
-
-  useEffect(() => {
-    if (
-      (activeBank && bankName !== "") ||
-      (activeBank === "" && bankName !== "")
-    ) {
-      setPage(1);
-      setShowModal(false);
-    } else if (!activeBank && bankName === "") {
-      setShowModal(true);
-    }
-  }, [activeBank, bankName]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [bankName]);
+    { enabled: !!bankName },
+  ) as { data: any; isLoading: boolean };
 
   const data: StatementTransaction[] = fetchStatement?.data ?? [];
 
-  // ── handlers ──────────────────────────────────────────────────────────────
   const handleSearch = () => {
     setApiSearch(inputValue.trim());
     setAccountNumber(accountNumberInput.trim());
-    setActiveBank("");
     setPage(1);
   };
 
@@ -200,25 +143,15 @@ export default function TransactionsPage() {
     if (mode === "all") {
       setApiSearch("");
       setInputValue("");
-      setActiveBank("");
     } else {
       setInputValue("");
-      setActiveBank("");
     }
   };
 
-  const handleSelectBank = (bank: {
-    label: string;
-    icon: string;
-    value: string;
-  }) => {
-    localStorage.setItem("bankName", bank.value);
-    setBankName(bank.value);
+  useEffect(() => {
     setPage(1);
-    setShowModal(false);
-  };
+  }, [bankName]);
 
-  // ── derived stats ─────────────────────────────────────────────────────────
   const currency = data[0]?.Currency ?? "NGN";
   const latestBalance = data[0] ? parseFloat(data[0].RunningBalance) : 0;
   const totalCredit = data.reduce(
@@ -271,21 +204,13 @@ export default function TransactionsPage() {
 
   const csvFilename = `transactions_${bankName}_${new Date().toISOString().split("T")[0]}.csv`;
 
-  // ── render ────────────────────────────────────────────────────────────────
   return (
     <>
-      <BankSelectionModal
-        isOpen={showModal}
-        onClose={() => {}}
-        onSelectBank={handleSelectBank}
-      />
-
       <div className="min-h-screen" style={{ backgroundColor: "#0d1a11" }}>
         <TransactionDetail />
 
-        {/* ── Page padding: tight on mobile, generous on desktop ── */}
         <div className="p-4 sm:p-6 lg:p-8">
-          {/* ── Header ── */}
+          {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -318,7 +243,6 @@ export default function TransactionsPage() {
               </p>
             </div>
 
-            {/* Export button — full-width on xs, auto on sm+ */}
             <CSVLink
               data={data}
               headers={CSV_HEADERS}
@@ -364,7 +288,7 @@ export default function TransactionsPage() {
             </CSVLink>
           </motion.div>
 
-          {/* ── Stats grid: 1 col → 2 col → 4 col ── */}
+          {/* Stats grid */}
           <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
             {stats.map((s, i) => (
               <motion.div
@@ -411,7 +335,7 @@ export default function TransactionsPage() {
             ))}
           </div>
 
-          {/* ── Filters ── */}
+          {/* Filters */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -422,7 +346,6 @@ export default function TransactionsPage() {
               border: "1px solid rgba(255,255,255,0.07)",
             }}
           >
-            {/* Search row */}
             <div className="flex items-center gap-2 w-full sm:flex-1 sm:min-w-[260px]">
               <div className="relative flex-1">
                 <Search
@@ -470,7 +393,6 @@ export default function TransactionsPage() {
               </motion.button>
             </div>
 
-            {/* Mode pills + count — side by side on mobile, pushed right on desktop */}
             <div className="flex items-center justify-between sm:justify-start sm:gap-3 w-full sm:w-auto sm:ml-auto">
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <Filter size={14} style={{ color: "rgba(255,255,255,0.4)" }} />
@@ -537,7 +459,7 @@ export default function TransactionsPage() {
             </div>
           </motion.div>
 
-          {/* ── Table (scrollable on mobile) ── */}
+          {/* Table */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -723,7 +645,7 @@ export default function TransactionsPage() {
               </table>
             </div>
 
-            {/* ── Pagination — stacks vertically on mobile ── */}
+            {/* Pagination */}
             <div
               className="px-4 sm:px-5 py-3 sm:py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
               style={{

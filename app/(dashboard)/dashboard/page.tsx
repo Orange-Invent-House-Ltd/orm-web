@@ -51,12 +51,6 @@ const BANK_LABELS: Record<string, string> = {
   PREMIUMTRUST: "PremiumTrust",
 };
 
-const BANK_ROUTES: Record<string, string> = {
-  ZENITH: "/banks/zenith",
-  UBA: "/banks/uba",
-  PREMIUMTRUST: "/banks/ptb",
-};
-
 function formatNGN(value: number) {
   return (
     "₦" +
@@ -422,7 +416,6 @@ export default function DashboardPage() {
               />
             ))
           : bankTotals.map((bank) => {
-              const route = BANK_ROUTES[bank.key];
               const outerClass =
                 "rounded-2xl p-6 relative overflow-hidden transition-all hover:opacity-85";
               const outerStyle = {
@@ -525,19 +518,15 @@ export default function DashboardPage() {
                   </div>
                 </>
               );
-              return route ? (
+              return (
                 <Link
                   key={bank.key}
-                  href={route}
+                  href={`/banks/${bank.key.toLowerCase()}`}
                   className={outerClass}
                   style={outerStyle}
                 >
                   {content}
                 </Link>
-              ) : (
-                <div key={bank.key} className={outerClass} style={outerStyle}>
-                  {content}
-                </div>
               );
             })}
       </div>

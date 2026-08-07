@@ -8,58 +8,38 @@ import {
   User,
   LogOut,
   ChevronRight,
-  Building2,
   Landmark,
-  Wallet,
-  CreditCard,
   CircleDollarSign,
+  Building2,
 } from 'lucide-react'
- import logo from '../assets/logo.png'
+import logo from '../assets/logo.png'
 import Image from 'next/image'
 import { useFinanceStore } from '@/store/financeStore'
+import { useAggregatedBalances } from '@/api/query'
 
 const navItem = {
   hidden: { opacity: 0, x: -12 },
   show: { opacity: 1, x: 0 },
 }
 
-// Bank routes with proper icons and colors
-const bankRoute = [
-  {
-    route: '/dashboard',
-    name: 'Dashboard',
-    icon: LayoutDashboard,
-    color: '#13ec5b', // Green
-  },
-  {
-    route: '/banks/zenith',
-    name: 'Zenith Bank',
-    icon: Landmark,
-    color: '#13ec5b', // Green
-    initial: 'ZB',
-  },
-  {
-    route: '/banks/uba',
-    name: 'UBA',
-        icon: Landmark,
+const BANK_COLORS: Record<string, string> = {
+  ZENITH: '#13ec5b',
+  UBA: '#60a5fa',
+  PREMIUMTRUST: '#f59e0b',
+}
 
-    color: '#0a5c2e', // Dark green
-    initial: 'UB',
-  },
-  {
-    route: '/banks/ptb',
-    name: 'Premium Trust Bank',
-       icon: Landmark,
-
-    color: '#1e7b4b', // Medium green
-    initial: 'PTB',
-  },
- 
-]
+function formatBankName(name: string): string {
+  const map: Record<string, string> = {
+    ZENITH: 'Zenith Bank',
+    UBA: 'UBA',
+    PREMIUMTRUST: 'Premium Trust Bank',
+  }
+  return map[name] ?? name.charAt(0) + name.slice(1).toLowerCase()
+}
 
 export default function Sidebar() {
-    const { setActiveBank, setIsMobileOpen} = useFinanceStore()
-  
+  const { setIsMobileOpen } = useFinanceStore()
+  const { data } = useAggregatedBalances()
   const pathname = usePathname()
   const router = useRouter()
 
@@ -71,8 +51,30 @@ export default function Sidebar() {
     router.push('/login')
   }
 
-  // Find active bank for the pill indicator
-  const activeBank = bankRoute.find(bank => isActive(bank.route))
+  const uniqueBanks: string[] = data
+    ? Array.from(new Set(
+        (data.nonMdaAccounts?.aggregatedAccounts ?? [])
+          .map((a: any) => a.bankName.toUpperCase())
+      ))
+    : []
+
+  const bankRoute = [
+    {
+      route: '/dashboard',
+      name: 'Dashboard',
+      icon: LayoutDashboard,
+      color: '#13ec5b',
+    },
+    ...uniqueBanks.map((bank) => ({
+      route: `/banks/${bank}`,
+      name: formatBankName(bank),
+      icon: Landmark,
+      color: BANK_COLORS[bank] ?? '#a78bfa',
+      initial: bank.slice(0, 3),
+    })),
+  ]
+
+  const activeBank = bankRoute.find((bank) => isActive(bank.route))
 
   return (
     <aside
@@ -111,28 +113,6 @@ export default function Sidebar() {
         variants={{ show: { transition: { staggerChildren: 0.06 } } }}
         className="flex-1 overflow-y-auto px-3 pt-4 pb-2 space-y-1"
       >
-        {/* Dashboard */}
-        {/* <motion.div variants={navItem}>
-          <Link
-            href="/dashboard"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group relative"
-            style={{
-              backgroundColor: isActive('/dashboard') ? 'rgba(19,236,91,0.12)' : 'transparent',
-              color: isActive('/dashboard') ? '#13ec5b' : 'rgba(255,255,255,0.55)',
-            }}
-          >
-            {isActive('/dashboard') && (
-              <motion.div
-                layoutId="sidebar-pill"
-                className="absolute left-0 top-0 bottom-0 w-[3px] rounded-r-full"
-                style={{ backgroundColor: '#13ec5b' }}
-              />
-            )}
-            <LayoutDashboard size={18} />
-            <span className="text-sm font-semibold">Dashboard</span>
-          </Link>
-        </motion.div> */}
-
         {/* Banks section */}
         <motion.div variants={navItem} className="pt-3 pb-1">
           <p
@@ -145,7 +125,7 @@ export default function Sidebar() {
             {bankRoute.map((bank, inx) => {
               const active = isActive(bank.route)
               const IconComponent = bank.icon
-              
+
               return (
                 <Link
                   key={inx}
@@ -155,11 +135,7 @@ export default function Sidebar() {
                     backgroundColor: active ? 'rgba(255,255,255,0.06)' : 'transparent',
                     color: active ? '#fff' : 'rgba(255,255,255,0.5)',
                   }}
-                  onClick={() => {
-                    setIsMobileOpen(false)
-                    setActiveBank('')
-                    localStorage.removeItem('bankName')
-                  }}
+                  onClick={() => setIsMobileOpen(false)}
                 >
                   {active && (
                     <motion.div
@@ -168,7 +144,7 @@ export default function Sidebar() {
                       style={{ backgroundColor: bank.color }}
                     />
                   )}
-                  
+
                   {/* Icon container */}
                   <div
                     className="w-7 h-7 rounded-lg flex items-center justify-center"
@@ -179,13 +155,13 @@ export default function Sidebar() {
                   >
                     <IconComponent size={16} />
                   </div>
-                  
+
                   <span className="text-sm font-medium flex-1">{bank.name}</span>
-                  
+
                   {active && (
-                    <ChevronRight 
-                      size={14} 
-                      style={{ color: bank.color }} 
+                    <ChevronRight
+                      size={14}
+                      style={{ color: bank.color }}
                       className="animate-pulse"
                     />
                   )}
@@ -195,33 +171,32 @@ export default function Sidebar() {
           </div>
         </motion.div>
 
-        {/* Transactions */}
+        {/* MDA Accounts */}
         <motion.div variants={navItem} className="pt-2">
           <p
             className="px-3 text-[10px] font-bold uppercase tracking-[0.18em] mb-2"
             style={{ color: 'rgba(255,255,255,0.3)' }}
           >
-            Activity
+            MDA
           </p>
           <Link
-            href="/transactions"
+            href="/mda"
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all relative group"
             style={{
-              backgroundColor: isActive('/transactions') ? 'rgba(19,236,91,0.12)' : 'transparent',
-              color: isActive('/transactions') ? '#13ec5b' : 'rgba(255,255,255,0.55)',
+              backgroundColor: isActive('/mda') ? 'rgba(245,158,11,0.12)' : 'transparent',
+              color: isActive('/mda') ? '#f59e0b' : 'rgba(255,255,255,0.55)',
             }}
-                    
-            onClick={() =>  setIsMobileOpen(false) }
+            onClick={() => setIsMobileOpen(false)}
           >
-            {isActive('/transactions') && (
+            {isActive('/mda') && (
               <motion.div
-                layoutId="transactions-pill"
+                layoutId="mda-pill"
                 className="absolute left-0 top-0 bottom-0 w-[3px] rounded-r-full"
-                style={{ backgroundColor: '#13ec5b' }}
+                style={{ backgroundColor: '#f59e0b' }}
               />
             )}
-            <CircleDollarSign size={18} />
-            <span className="text-sm font-semibold">All Transactions</span>
+            <Building2 size={18} />
+            <span className="text-sm font-semibold">MDA Accounts</span>
           </Link>
         </motion.div>
       </motion.nav>
@@ -246,11 +221,9 @@ export default function Sidebar() {
             className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
             style={{ backgroundColor: 'rgba(19,236,91,0.12)', color: '#13ec5b' }}
           >
-          
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-white leading-none">KDGOV</p>
-            {/* <p className="text-xs mt-0.5 truncate" style={{ color: 'rgba(255,255,255,0.35)' }}>Admin</p> */}
           </div>
           <User size={14} style={{ color: 'rgba(255,255,255,0.3)' }} />
         </div>
