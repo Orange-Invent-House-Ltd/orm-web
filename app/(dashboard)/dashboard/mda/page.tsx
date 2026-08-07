@@ -51,12 +51,6 @@ const BANK_LABELS: Record<string, string> = {
   PREMIUMTRUST: "PremiumTrust",
 };
 
-const BANK_ROUTES: Record<string, string> = {
-  ZENITH: "/banks/zenith",
-  UBA: "/banks/uba",
-  PREMIUMTRUST: "/banks/ptb",
-};
-
 function formatNGN(value: number) {
   return (
     "₦" +
@@ -440,7 +434,6 @@ export default function MDADashboardPage() {
           </div>
         ) : (
           bankTotals.map((bank) => {
-            const route = BANK_ROUTES[bank.key];
             const card = (
               <div
                 className="rounded-2xl p-6 relative overflow-hidden transition-all"
@@ -541,12 +534,10 @@ export default function MDADashboardPage() {
                 </div>
               </div>
             );
-            return route ? (
-              <Link key={bank.key} href={`${route}/mda?bank=${bank.label.toUpperCase}`} className="block transition-all hover:opacity-85">
+            return (
+              <Link key={bank.key} href={`/mda?bank=${bank.key}`} className="block transition-all hover:opacity-85">
                 {card}
               </Link>
-            ) : (
-              <div key={bank.key}>{card}</div>
             );
           })
         )}
